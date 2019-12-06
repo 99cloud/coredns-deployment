@@ -1,0 +1,18 @@
+{
+    "CN": "etcd peer",
+    "hosts": [
+        "{{ '*.' + etcd_peer_svc_name + '.' + namespace_coredns_edge + '.svc' }}",
+        "{{ '*.' + etcd_peer_svc_name + '.' + namespace_coredns_edge + '.svc.' + caas_cluster_domain }}"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "China",
+            "L": "Shanghai",
+            "ST": "Shanghai"
+        }
+    ]
+}

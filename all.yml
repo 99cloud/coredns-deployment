@@ -1,0 +1,7 @@
+- name: Preparation
+  hosts: master1
+  tasks:
+  - include_role:
+       name: prepareation
+  - include_role:
+       name: etcd-operator

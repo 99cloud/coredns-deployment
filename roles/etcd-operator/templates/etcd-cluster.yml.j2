@@ -1,0 +1,25 @@
+apiVersion: "etcd.database.coreos.com/v1beta2"
+kind: "EtcdCluster"
+metadata:
+  name: {{ etcd_peer_svc_name }}
+  namespace: {{ namespace_coredns_edge }}
+spec:
+  size: 3
+  TLS:
+    static:
+      member:
+        peerSecret: etcd-peer-tls
+        serverSecret: etcd-server-tls
+      operatorSecret: etcd-client-tls
+  pod:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 9000
+      fsGroup: 9000
+    persistentVolumeClaimSpec:
+      storageClassName: {{ etcd_storage_class_name }}
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ etcd_storage_size }}Gi

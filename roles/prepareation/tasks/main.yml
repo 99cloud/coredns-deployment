@@ -1,0 +1,22 @@
+- name: Clean project dir
+  file:
+    state: absent
+    path: "{{ project_template_path }}"
+
+- name: Create out dir
+  file:
+    path: "{{ project_template_path }}"
+    state: directory
+    mode: 0755
+
+- name: Download cfssl tool
+  get_url:
+    url: https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+    dest: /usr/bin/cfssl
+    mode: '0711'
+
+- name: Download cfssljson tool
+  get_url:
+    url: https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+    dest: /usr/bin/cfssljson
+    mode: '0711'
