@@ -1,60 +1,60 @@
 - name: Copy ca-config.json template to target
   template: 
     src: "{{ role_path }}/templates/ca-config.json.j2"
-    dest: "{{ project_template_path }}/ca-config.json"
+    dest: "{{ project_template_path }}/etcd/ca-config.json"
   when: etcd_use_tls == "yes"
 
 - name: Copy  ca-csr.json template to target
   template: 
     src: "{{ role_path }}/templates/ca-csr.json.j2"
-    dest: "{{ project_template_path }}/ca-csr.json"
+    dest: "{{ project_template_path }}/etcd/ca-csr.json"
   when: etcd_use_tls == "yes"
 
 - name: Copy etcd-client.json template to target
   template: 
     src: "{{ role_path }}/templates/etcd-client.json.j2"
-    dest: "{{ project_template_path }}/etcd-client.json"
+    dest: "{{ project_template_path }}/etcd/etcd-client.json"
   when: etcd_use_tls == "yes"
 
 - name: Copy peer.json template to target
   template: 
     src: "{{ role_path }}/templates/peer.json.j2"
-    dest: "{{ project_template_path }}/peer.json"
+    dest: "{{ project_template_path }}/etcd/peer.json"
   when: etcd_use_tls == "yes"
 
 - name: Copy server.json template to target
   template: 
     src: "{{ role_path }}/templates/server.json.j2"
-    dest: "{{ project_template_path }}/server.json"
+    dest: "{{ project_template_path }}/etcd/server.json"
   when: etcd_use_tls == "yes"
 
 - name: Copy cluster role template to target
   template: 
     src: "{{ role_path }}/templates/cluster-role.yml.j2"
-    dest: "{{ project_template_path }}/cluster-role.yml"
+    dest: "{{ project_template_path }}/etcd/cluster-role.yml"
 
 - name: Copy cluster role binding template to target
   template: 
     src: "{{ role_path }}/templates/cluster-role-binding.yml.j2"
-    dest: "{{ project_template_path }}/cluster-role-binding.yml"
+    dest: "{{ project_template_path }}/etcd/cluster-role-binding.yml"
 
 - name: Copy etcd-operator template to target
   template: 
     src: "{{ role_path }}/templates/etcd-operator.yml.j2"
-    dest: "{{ project_template_path }}/etcd-operator.yml"
+    dest: "{{ project_template_path }}/etcd/etcd-operator.yml"
 
 - name: Copy etcd cluster template to target
   template: 
     src: "{{ role_path }}/templates/etcd-cluster.yml.j2"
-    dest: "{{ project_template_path }}/etcd-cluster.yml"
+    dest: "{{ project_template_path }}/etcd/etcd-cluster.yml"
 
 - name: Copy crd template to target
   template: 
     src: "{{ role_path }}/templates/etcd_crd.yml.j2"
-    dest: "{{ project_template_path }}/etcd_crd.yml"
+    dest: "{{ project_template_path }}/etcd/etcd_crd.yml"
 
 - name: Create crd etcdcluster
-  shell: "{{ oc_binary }} apply -f {{ project_template_path }}/etcd_crd.yml" 
+  shell: "{{ oc_binary }} apply -f {{ project_template_path }}/etcd/etcd_crd.yml" 
 
 - name: “{{ 'Create namespace ' + namespace_coredns_edge }}”
   shell: "{{ oc_binary }} create ns {{ namespace_coredns_edge }}" 
@@ -69,38 +69,38 @@
   ignore_errors: "yes"
 
 - name: Create cluster role etcd-operator
-  shell: "{{ oc_binary }} create -f {{ project_template_path }}/cluster-role.yml" 
+  shell: "{{ oc_binary }} create -f {{ project_template_path }}/etcd/cluster-role.yml" 
   ignore_errors: "yes"
 
 - name: Create cluster role binding etcd-operator
-  shell: "{{ oc_binary }} create -f {{ project_template_path }}/cluster-role-binding.yml" 
+  shell: "{{ oc_binary }} create -f {{ project_template_path }}/etcd/cluster-role-binding.yml" 
   ignore_errors: "yes"
 
 - name: Create etcd operator
-  shell: "{{ oc_binary }} apply -f {{ project_template_path }}/etcd-operator.yml" 
+  shell: "{{ oc_binary }} apply -f {{ project_template_path }}/etcd/etcd-operator.yml" 
 
 - name: Create root cert
   shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca -"
   args:
-    chdir: "{{ project_template_path }}"
+    chdir: "{{ project_template_path }}/etcd"
   when: etcd_use_tls == "yes"
 
 - name: Create peer cert
   shell: "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=peer peer.json | cfssljson -bare peer"
   args:
-    chdir: "{{ project_template_path }}"
+    chdir: "{{ project_template_path }}/etcd"
   when: etcd_use_tls == "yes"
 
 - name: Create server cert
   shell: "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=server server.json | cfssljson -bare server"
   args:
-    chdir: "{{ project_template_path }}"
+    chdir: "{{ project_template_path }}/etcd"
   when: etcd_use_tls == "yes"
 
 - name: Create client cert
   shell: "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client etcd-client.json | cfssljson -bare etcd-client"
   args:
-    chdir: "{{ project_template_path }}"
+    chdir: "{{ project_template_path }}/etcd"
   when: etcd_use_tls == "yes"
 
 - name: Fix name issue to match operator secret mapping needs
@@ -116,7 +116,7 @@
     mv ca.pem peer-ca.crt
     rm *.csr ca-key.pem
   args:
-    chdir: "{{ project_template_path }}"
+    chdir: "{{ project_template_path }}/etcd"
   when: etcd_use_tls == "yes"
 
 - name: Remove server secrets
@@ -135,17 +135,17 @@
   when: etcd_use_tls == "yes"
 
 - name: Create server secrets
-  shell: "{{ oc_binary }} create secret generic etcd-peer-tls --from-file={{ project_template_path }}/peer-ca.crt --from-file={{ project_template_path }}/peer.crt --from-file={{ project_template_path }}/peer.key -n {{ namespace_coredns_edge }}"
+  shell: "{{ oc_binary }} create secret generic etcd-peer-tls --from-file={{ project_template_path }}/etcd/peer-ca.crt --from-file={{ project_template_path }}/etcd/peer.crt --from-file={{ project_template_path }}/etcd/peer.key -n {{ namespace_coredns_edge }}"
   ignore_errors: "yes"
   when: etcd_use_tls == "yes"
 
 - name: Create client secrets
-  shell: "{{ oc_binary }} create secret generic etcd-server-tls --from-file={{ project_template_path }}/server-ca.crt --from-file={{ project_template_path }}/server.crt --from-file={{ project_template_path }}/server.key -n {{ namespace_coredns_edge }}"
+  shell: "{{ oc_binary }} create secret generic etcd-server-tls --from-file={{ project_template_path }}/etcd/server-ca.crt --from-file={{ project_template_path }}/etcd/server.crt --from-file={{ project_template_path }}/etcd/server.key -n {{ namespace_coredns_edge }}"
   ignore_errors: "yes"
   when: etcd_use_tls == "yes"
 
 - name: Create client secrets
-  shell: "{{ oc_binary }} create secret generic etcd-client-tls --from-file={{ project_template_path }}/etcd-client-ca.crt --from-file={{ project_template_path }}/etcd-client.crt --from-file={{ project_template_path }}/etcd-client.key -n {{ namespace_coredns_edge }}"
+  shell: "{{ oc_binary }} create secret generic etcd-client-tls --from-file={{ project_template_path }}/etcd/etcd-client-ca.crt --from-file={{ project_template_path }}/etcd/etcd-client.crt --from-file={{ project_template_path }}/etcd/etcd-client.key -n {{ namespace_coredns_edge }}"
   ignore_errors: "yes"
   when: etcd_use_tls == "yes"
 
@@ -158,4 +158,4 @@
     seconds: 10
 
 - name: Create etcd clusters
-  shell: "{{ oc_binary }} apply -f {{ project_template_path }}/etcd-cluster.yml"
+  shell: "{{ oc_binary }} apply -f {{ project_template_path }}/etcd/etcd-cluster.yml"

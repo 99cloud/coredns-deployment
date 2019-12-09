@@ -9,6 +9,18 @@
     state: directory
     mode: 0755
 
+- name: Create etcd dir
+  file:
+    path: "{{ project_template_path }}/etcd"
+    state: directory
+    mode: 0755
+
+- name: Clean nats dir
+  file:
+    path: "{{ project_template_path }}/nats"
+    state: directory
+    mode: 0755
+
 - name: Download cfssl tool
   get_url:
     url: https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
