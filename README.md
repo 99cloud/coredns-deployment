@@ -30,4 +30,4 @@
 1. 执行ansible:
 
         cd [path]/coredns-edge-deployment
-        ansible-playbook -i inventory.example all.yml
+        ansible-playbook -i inventory.example deploy_all.yml
