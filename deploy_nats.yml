@@ -1,5 +1,5 @@
-- name: Etcd
+- name: NATS
   hosts: master1
   tasks:
   - include_role:
-       name: etcd-operator
+       name: nats-operator

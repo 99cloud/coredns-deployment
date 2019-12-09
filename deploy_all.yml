@@ -5,3 +5,5 @@
        name: prepareation
   - include_role:
        name: etcd-operator
+  - include_role:
+       name: nats-operator

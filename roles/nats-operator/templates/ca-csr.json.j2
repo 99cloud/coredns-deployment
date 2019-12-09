@@ -1,10 +1,5 @@
 {
-    "CN": "etcd server",
-    "hosts": [
-        "{{ '*.' + etcd_peer_svc_name + '.' +namespace_coredns_edge + '.svc' }}",
-        "{{ etcd_peer_svc_name + '-client.' + namespace_coredns_edge + '.svc' }}",
-        "localhost"
-    ],
+    "CN": "nats.io",
     "key": {
         "algo": "rsa",
         "size": 2048

@@ -16,10 +16,10 @@ spec:
       runAsNonRoot: true
       runAsUser: 9000
       fsGroup: 9000
-    persistentVolumeClaimSpec:
-      storageClassName: {{ etcd_storage_class_name }}
-      accessModes:
-      - ReadWriteOnce
-      resources:
-        requests:
-          storage: {{ etcd_storage_size }}Gi
+    #persistentVolumeClaimSpec:
+     # storageClassName: {{ etcd_storage_class_name }}
+      #accessModes:
+      #- ReadWriteOnce
+      #resources:
+      #  requests:
+       #   storage: {{ etcd_storage_size }}Gi
