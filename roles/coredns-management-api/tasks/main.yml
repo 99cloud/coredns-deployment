@@ -1,0 +1,105 @@
+- name: Set var database_auth_mode if database use tls
+  set_fact:
+    database_auth_mode: "tls"
+    database_connection_protocol: "https"
+  when: etcd_use_tls == "yes"
+
+- name: Set var database_auth_mode if database do not use tls
+  set_fact:
+    database_auth_mode: "none"
+    database_connection_protocol: "http"
+  when: etcd_use_tls != "yes"
+
+- name: Set var MESSAGE_QUEUE_AUTH_MODE if nats use tls
+  set_fact:
+    message_queue_auth_mode: "tls"
+  when: nats_use_tls == "yes"
+
+- name: Set var MESSAGE_QUEUE_AUTH_MODE if nats do not use tls
+  set_fact:
+    message_queue_auth_mode: "none"
+  when: nats_use_tls != "yes"
+
+- name: "Waits for etcd service {{ etcd_peer_svc_name }}.{{ namespace_coredns_edge }}.svc:2379 to start for 120 secs"
+  wait_for:
+    timeout: 120
+    host: "{{ etcd_peer_svc_name }}.{{ namespace_coredns_edge }}-client.svc"
+    port: 2379
+    delay: 10
+    state: drained
+
+- name: "Waits for nats service {{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc:4222 to start for 120 secs"
+  wait_for:
+    timeout: 120
+    host: "{{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc"
+    port: 4222
+    delay: 10
+    state: drained
+  when: coredns_speaker_mode == "initiative"
+
+- name: Copy config template to target
+  template: 
+    src: "{{ role_path }}/templates/config.conf.j2"
+    dest: "{{ project_template_path }}/coredns-speaker/config.conf"
+
+- name: Copy deployment template to target
+  template: 
+    src: "{{ role_path }}/templates/deployment.yml.j2"
+    dest: "{{ project_template_path }}/coredns-speaker/deployment.yml"
+
+- name: Remove old allowed token
+  shell: "{{ oc_binary }} delete secret coredns-speaker-token -n {{ namespace_coredns_edge }}"
+  ignore_errors: "yes"
+
+- name: Create allowed token
+  shell: "{{ oc_binary }} create secret generic coredns-speaker-token --from-literal=allowed_token=\"{{ allowed_token }}\" -n {{ namespace_coredns_edge }}"
+
+- name: Remove old db secret
+  shell: "{{ oc_binary }} delete secret coredns-speaker-etcd -n {{ namespace_coredns_edge }}"
+  ignore_errors: "yes"
+  when: database_auth_mode == "basic"
+
+- name: Create db secret
+  shell: "{{ oc_binary }} create secret generic coredns-speaker-etcd 
+  --from-literal=username=\"{{ etcd_username }}\" 
+  --from-literal=password=\"{{ etcd_password }}\" -n {{ namespace_coredns_edge }}"
+  when: database_auth_mode == "basic"
+
+- name: Remove old config map
+  shell: "{{ oc_binary }} delete cm coredns-speaker-config -n {{ namespace_coredns_edge }}"
+  ignore_errors: "yes"
+
+- name: Create coredns management api config map
+  shell: "{{ oc_binary }} create cm coredns-speaker-config 
+  --from-literal=DATABASE_ENDPOINTS=\"{{ database_connection_protocol }}://{{ etcd_peer_svc_name }}-client.{{ namespace_coredns_edge }}.svc:2379\" 
+  --from-literal=DATABASE_BACKEND_TYPE=etcd
+  --from-literal=DATABASE_AUTH_MODE={{ database_auth_mode }}
+  --from-literal=DATABASE_CA_FILE_PATH={{ project_template_path }}/etcd/etcd-client-ca.crt
+  --from-literal=DATABASE_KEY_FILE_PATH={{ project_template_path }}/etcd/etcd-client.key
+  --from-literal=DATABASE_CERT_FILE_PATH={{ project_template_path }}/etcd/etcd-client.crt
+  --from-literal=MESSAGE_QUEUE_AUTH_MODE={{ message_queue_auth_mode }}
+  --from-literal=SPEAKER_MODE={{ coredns_speaker_mode }}
+  --from-literal=AUTH_MODE={{ api_auth_mode }}
+  --from-literal=MESSAGE_QUEUE_ENDPOINT={{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc:4222
+  --from-literal=MESSAGE_QUEUE_CA_FILE_PATH={{ project_template_path }}/nats/ca.pem
+  --from-literal=MESSAGE_QUEUE_CERT_FILE_PATH={{ project_template_path }}/nats/client.pem
+  --from-literal=MESSAGE_QUEUE_KEY_FILE_PATH={{ project_template_path }}/nats/client-key.pem
+  -n {{ namespace_coredns_edge }}"
+
+- name: Remove old deployment
+  shell: "{{ oc_binary }} delete -f {{ project_template_path }}/coredns-speaker/deployment.yml"
+  ignore_errors: "yes"
+
+- name: Wait 30 secs for deleting existing cluster
+  pause:
+    seconds: 30
+
+- name: Deploy coredns management api
+  shell: "{{ oc_binary }} create -f {{ project_template_path }}/coredns-speaker/deployment.yml"
+
+- name: Remove old service
+  shell: "{{ oc_binary }} delete svc coredns-speaker-svc -n {{ namespace_coredns_edge }}"
+  ignore_errors: "yes"
+
+- name: Deploy coredns management api service
+  shell: "{{ oc_binary }} expose deployment/coredns-speaker-deployment --name coredns-speaker-svc -n {{ namespace_coredns_edge }}"

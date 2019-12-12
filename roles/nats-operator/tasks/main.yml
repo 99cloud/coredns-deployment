@@ -104,6 +104,11 @@
   when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
   ignore_errors: "yes"
 
+- name: Rmove client connection tls  secret 
+  shell: "{{ oc_binary }} delete secret nats-client-connection-tls -n {{ namespace_coredns_edge }}"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+  ignore_errors: "yes"
+
 - name: Create server tls secret 
   shell: "{{ oc_binary }} create secret generic nats-clients-tls --from-file=ca.pem --from-file=server-key.pem --from-file=server.pem -n {{ namespace_coredns_edge }}"
   args:
@@ -112,6 +117,12 @@
 
 - name: Create route tls secret 
   shell: "{{ oc_binary }} create secret generic nats-routes-tls --from-file=ca.pem --from-file=route-key.pem --from-file=route.pem -n {{ namespace_coredns_edge }}"
+  args:
+    chdir: "{{ project_template_path }}/nats"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Create client connection tls secret 
+  shell: "{{ oc_binary }} create secret generic nats-client-connection-tls --from-file=ca.pem --from-file=client-key.pem --from-file=client.pem -n {{ namespace_coredns_edge }}"
   args:
     chdir: "{{ project_template_path }}/nats"
   when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"

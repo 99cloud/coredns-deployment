@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns-speaker-deployment
+  namespace: {{ namespace_coredns_edge }}
+  labels:
+    deploy: coredns-speaker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      pod: edge-coredns-speaker
+  template:
+    metadata:
+      labels:
+        pod: edge-coredns-speaker
+    spec:
+      volumes:
+{% if database_auth_mode == "tls" %}
+      - name: etcd-tls
+        secret:
+          secretName: etcd-client-tls
+{% endif %}
+{% if message_queue_auth_mode == "tls" %}
+      - name: nats-tls
+        secret:
+          secretName: nats-client-connection-tls
+{% endif %}
+      containers:
+      - name: coredns-speaker
+        image: 99cloud/coredns-management-api:latest
+        imagePullPolicy: IfNotPresent
+        #image: busybox
+        #command: ["sh","-c","sleep 100000000"]
+        volumeMounts:
+{% if database_auth_mode == "tls" %}
+        - name: etcd-tls
+          mountPath: "{{ project_template_path }}/etcd/"
+          readOnly: true
+{% endif %}
+{% if message_queue_auth_mode == "tls" %}
+        - name: nats-tls
+          mountPath: "{{ project_template_path }}/nats/"
+          readOnly: true
+{% endif %}
+        envFrom:
+          - configMapRef:
+              name: coredns-speaker-config
+        env:
+          - name: ALLOWED_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: coredns-speaker-token
+                key: allowed_token
+{% if database_auth_mode == "basic" %}
+          - name: DATABASE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: coredns-speaker-etcd
+                key: username
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: coredns-speaker-etcd
+                key: password          
+{% endif %}
+        ports:
+        - containerPort: 80

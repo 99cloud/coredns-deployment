@@ -8,10 +8,10 @@
         "{{ nats_cluster_name }}-mgmt",
         "{{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc",
         "{{ nats_cluster_name }}-mgmt.{{ namespace_coredns_edge }}.svc",
-        "{{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc.cluster.local",
-        "{{ nats_cluster_name }}-mgmt.{{ namespace_coredns_edge }}.svc.cluster.local",
-        "*.{{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc.cluster.local",
-        "*.{{ nats_cluster_name }}-mgmt.{{ namespace_coredns_edge }}.svc.cluster.local"
+        "{{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc.{{ caas_cluster_domain }}",
+        "{{ nats_cluster_name }}-mgmt.{{ namespace_coredns_edge }}.svc.{{ caas_cluster_domain }}",
+        "*.{{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc.{{ caas_cluster_domain }}",
+        "*.{{ nats_cluster_name }}-mgmt.{{ namespace_coredns_edge }}.svc.{{ caas_cluster_domain }}"
     ],
     "key": {
         "algo": "rsa",

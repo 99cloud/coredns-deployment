@@ -7,3 +7,5 @@
        name: etcd-operator
   - include_role:
        name: nats-operator
+  - include_role:
+       name: coredns-management-api

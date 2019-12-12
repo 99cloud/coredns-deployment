@@ -1,0 +1,13 @@
+DATABASE_ENDPOINTS={{ database_connection_protocol }}://{{ etcd_peer_svc_name }}.{{ namespace_coredns_edge }}.svc:2379
+DATABASE_BACKEND_TYPE=etcd
+DATABASE_AUTH_MODE={{ database_auth_mode }}
+DATABASE_CA_FILE_PATH={{ project_template_path }}/etcd/etcd-client-ca.crt
+DATABASE_KEY_FILE_PATH={{ project_template_path }}/etcd/etcd-client.key
+DATABASE_CERT_FILE_PATH={{ project_template_path }}/etcd/etcd-client.crt
+MESSAGE_QUEUE_AUTH_MODE={{ message_queue_auth_mode }}
+SPEAKER_MODE={{ coredns_speaker_mode }}
+AUTH_MODE={{ api_auth_mode }}
+MESSAGE_QUEUE_ENDPOINT={{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc:4222
+MESSAGE_QUEUE_CA_FILE_PATH={{ project_template_path }}//nats/ca.pem
+MESSAGE_QUEUE_CERT_FILE_PATH={{ project_template_path }}//nats/client.pem
+MESSAGE_QUEUE_KEY_FILE_PATH={{ project_template_path }}//nats/client-key.pem

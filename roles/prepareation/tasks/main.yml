@@ -15,9 +15,15 @@
     state: directory
     mode: 0755
 
-- name: Clean nats dir
+- name: Create nats dir
   file:
     path: "{{ project_template_path }}/nats"
+    state: directory
+    mode: 0755
+
+- name: Create coredns management api dir
+  file:
+    path: "{{ project_template_path }}/coredns-speaker"
     state: directory
     mode: 0755
 
