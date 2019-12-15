@@ -1,0 +1,20 @@
+- name: Prepare local tls sign
+  hosts: tls
+  tasks:
+    - include_role:
+        name: etcd-no-k8s
+        tasks_from: tls_localhost_prepareation
+    
+- name: Install etcd cluster
+  hosts: etcd
+  tasks:
+    - include_role:
+        name: prepareation
+    - include_role:
+        name: etcd-no-k8s
+
+- name: Install coredns speaker(management api)
+  hosts: coredns_api
+  tasks:
+    - include_role:
+        name: coredns-management-api-no-k8s

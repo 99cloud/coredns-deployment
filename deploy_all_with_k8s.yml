@@ -1,0 +1,21 @@
+- name: Preparation
+  hosts: master1
+  tasks:
+  #- include_role:
+  #     name: prepareation
+  #- include_role:
+  #     name: etcd-operator
+  #- include_role:
+  #     name: nats-operator
+  #- include_role:
+  #     name: coredns-management-api
+  - include_role:
+       name: coredns-message
+       tasks_from: prepare
+
+- name: Deploy dns static pod
+  hosts: dns
+  tasks:
+  - include_role:
+     name: coredns-message
+     tasks_from: deploy_dns

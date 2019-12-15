@@ -1,0 +1,44 @@
+- name: Create etcd certs dir
+  file:
+    path: "{{ project_template_path }}/etcd/certs"
+    state: directory
+    mode: 0755
+
+- name: Install docker
+  yum:
+    name: docker
+
+- name: Enable and start docker service
+  service:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: Copy config template to target
+  template: 
+    src: "{{ role_path }}/templates/env_file.j2"
+    dest: "{{ project_template_path }}/coredns-speaker/env_file"
+
+- name: Copy etcd client ca to target
+  template: 
+    src: "{{ localhost_tls_dir }}/etcd-client-ca.crt"
+    dest: "{{ project_template_path }}/etcd/certs/etcd-client-ca.crt"
+
+- name: Copy etcd client cert to target
+  template: 
+    src: "{{ localhost_tls_dir }}/etcd-client.crt"
+    dest: "{{ project_template_path }}/etcd/certs/etcd-client.crt"
+
+- name: Copy etcd client key to target
+  template: 
+    src: "{{ localhost_tls_dir }}/etcd-client.key"
+    dest: "{{ project_template_path }}/etcd/certs/etcd-client.key"
+
+- name: Remove existing container
+  shell: "docker rm -f coredns-speaker"
+
+- name: Run coredns api service in container
+  shell: "docker run --name coredns-speaker -d -p {{ coredns_api_port }}:80 
+  --env-file {{ project_template_path }}/coredns-speaker/env_file 
+  -v {{ project_template_path }}/etcd/certs/:{{ database_tls_dir }}
+  -v /etc/hosts:/etc/hosts 99cloud/coredns-management-api"

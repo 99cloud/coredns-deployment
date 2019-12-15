@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ coredns_cluster_name }}
+  namespace: {{ namespace_coredns_edge }}
+  labels:
+    edge: static-pod-coredns
+spec:
+  restartPolicy: Always
+  hostNetwork: true
+  volumes:
+  - name: coredns-config-vol
+    configMap:
+      name: coredns-config
+  containers:
+  - name: coredns-container
+    #image: 99cloud/coredns-edge:latest
+    image: busybox
+    imagePullPolicy: IfNotPresent
+    command: ["sh","-c","sleep 100000000"]
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: coredns-config-vol
+      mountPath: /etc/coredns-edge
+      readOnly: true

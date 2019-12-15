@@ -78,6 +78,7 @@
   --from-literal=DATABASE_KEY_FILE_PATH={{ project_template_path }}/etcd/etcd-client.key
   --from-literal=DATABASE_CERT_FILE_PATH={{ project_template_path }}/etcd/etcd-client.crt
   --from-literal=MESSAGE_QUEUE_AUTH_MODE={{ message_queue_auth_mode }}
+  --from-literal=MESSAGE_QUEUE_SUBJECT={{ message_queue_subject }}
   --from-literal=SPEAKER_MODE={{ coredns_speaker_mode }}
   --from-literal=AUTH_MODE={{ api_auth_mode }}
   --from-literal=MESSAGE_QUEUE_ENDPOINT={{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc:4222

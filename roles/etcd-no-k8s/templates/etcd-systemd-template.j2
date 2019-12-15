@@ -1,0 +1,32 @@
+# /etc/systemd/system/corednsd.service
+[Unit]
+Description=etcd
+Documentation=https://github.com/etcd-io/etcd
+After=network-online.target
+Confilicts=etcd.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=0
+ExecStart=/usr/bin/etcd --name {{ ansible_hostname }} \
+--initial-advertise-peer-urls https://{{ ansible_hostname }}:2380 \
+--listen-peer-urls https://{{ ansible_default_ipv4.address }}:2380 \
+--listen-client-urls https://{{ ansible_default_ipv4.address }}:2379,https://127.0.0.1:2379 \
+--advertise-client-urls https://{{ ansible_hostname }}:2379 \
+--data-dir {{ project_template_path }}/etcd/etcd-data \
+--trusted-ca-file {{ project_template_path }}/etcd/etcd-ca.crt \
+--cert-file {{ project_template_path }}/etcd/server.crt \
+--key-file {{ project_template_path }}/etcd/server.key \
+--peer-client-cert-auth=true \
+--peer-trusted-ca-file {{ project_template_path }}/etcd/etcd-ca.crt \
+--peer-key-file {{ project_template_path }}/etcd/server.key \
+--peer-cert-file {{ project_template_path }}/etcd/server.crt \
+--initial-cluster {{ etcd_node1_hostname }}=https://{{ etcd_node1_hostname }}:2380,{{ etcd_node2_hostname }}=https://{{ etcd_node2_hostname }}:2380,{{ etcd_node3_hostname }}=https://{{ etcd_node3_hostname }}:2380 \
+--initial-cluster-state new
+ExecReload=/bin/kill -HUP 
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

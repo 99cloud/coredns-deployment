@@ -1,0 +1,44 @@
+- name: Set var coredns message plugin mode var
+  set_fact:
+    coredns_message_mode: "LISTEN"
+  when: coredns_speaker_mode == "initiative"
+
+- name: Set var coredns message plugin mode var
+  set_fact:
+    coredns_message_mode: "ASK"
+  when: coredns_speaker_mode == "initiative"
+
+- name: Set nats auth mode var
+  set_fact:
+    nats_auth_mode: "tls"
+  when: nats_use_tls == "yes"
+
+- name: Set nats auth mode var
+  set_fact:
+    nats_auth_mode: "basic"
+  when: nats_use_tls != "yes"
+
+- name: Copy Corefile template to target
+  template: 
+    src: "{{ role_path }}/templates/Corefile.j2"
+    dest: "{{ project_template_path }}/coredns/Corefile"
+
+- name: Copy config template to target
+  template: 
+    src: "{{ role_path }}/templates/config.yaml.j2"
+    dest: "{{ project_template_path }}/coredns/config.yaml"
+
+- name: Copy config template to target
+  template: 
+    src: "{{ role_path }}/templates/coredns_pod.yaml.j2"
+    dest: "{{ project_template_path }}/coredns/coredns_pod.yaml"
+
+- name: Remove old config map
+  shell: "{{ oc_binary }} delete configmap coredns-config -n {{ namespace_coredns_edge }}"
+  ignore_errors: "yes"
+
+- name: Create coredns config map
+  shell: "{{ oc_binary }} create configmap coredns-config 
+  --from-file={{ project_template_path}}/coredns/Corefile 
+  --from-file={{ project_template_path }}/coredns/config.yaml
+   -n {{ namespace_coredns_edge }}"

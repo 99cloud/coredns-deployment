@@ -1,0 +1,13 @@
+- name: Remove old dns static pod
+  file:
+    path: "{{ pod_manifest_path }}/static-pod-coredns-edge.yaml"
+    state: absent
+
+- name: Wait 30 secs for deleting existing static pod
+  pause:
+    seconds: 30
+
+- name: "Copy static-pod-coredns-edge.yaml to {{ pod_manifest_path }}"
+  template: 
+    src: "{{ role_path }}/templates/coredns_pod.yaml.j2"
+    dest: "{{ pod_manifest_path }}/static-pod-coredns-edge.yaml"

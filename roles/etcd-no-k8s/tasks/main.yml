@@ -1,0 +1,43 @@
+- name: Create etcd data dir
+  file:
+    path: "{{ project_template_path }}/etcd/etcd-data"
+    state: directory
+    mode: 0755
+
+- name: Copy etcd systemd template to target
+  template: 
+    src: "{{ role_path }}/templates/etcd-systemd-template.j2"
+    dest: "/etc/systemd/system/etcd.service"
+
+- name: Copy etcd binary to target
+  copy: 
+    src: "{{ role_path }}/binary/etcd"
+    dest: "/usr/bin/etcd"
+    mode: 0755
+
+- name: Copy etcdctl binary to target
+  copy: 
+    src: "{{ role_path }}/binary/etcdctl"
+    dest: "/usr/bin/etcdctl"
+    mode: 0755
+
+- name: Copy ca to target
+  copy: 
+    src: "{{ localhost_tls_dir }}/ca.pem"
+    dest: "{{ project_template_path }}/etcd/etcd-ca.crt"
+
+- name: Copy certs to target
+  copy: 
+    src: "{{ localhost_tls_dir }}/{{ ansible_hostname }}.pem"
+    dest: "{{ project_template_path }}/etcd/server.crt"
+
+- name: Copy key to target
+  copy: 
+    src: "{{ localhost_tls_dir }}/{{ ansible_hostname }}-key.pem"
+    dest: "{{ project_template_path }}/etcd/server.key"
+
+- name: Enable and start etcd service
+  service:
+    name: etcd
+    enabled: yes
+    state: started    
