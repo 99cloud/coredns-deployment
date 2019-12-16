@@ -56,10 +56,15 @@
 
 |  | coredns | coredns api | nats(消息队列) | etcd（数据库） |
 | --- | --- | --- | --- | --- |
-| 部署节点 | systemd | container + systemd | N/A | systemd |
 | 节点1 | systemd | container + systemd | N/A | systemd |
 | 节点2 | systemd | container + systemd | N/A | systemd |
 | 节点3 | systemd | container + systemd | N/A | systemd |
+
+1. 所有组件的systemd名称
+
+|  | coredns | coredns api | nats(消息队列) | etcd（数据库） |
+| --- | --- | --- | --- | --- |
+| systemd名称 | coredns | coredns-api | N/A | etcd |
 
 1. 不在脚本中部署且需要自己部署的的组件Load balancer:
 
