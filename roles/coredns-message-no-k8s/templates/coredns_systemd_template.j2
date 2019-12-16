@@ -1,0 +1,18 @@
+# /etc/systemd/system/corednsd.service
+[Unit]
+Description=coredns
+Documentation=https://github.com/99cloud/coredns
+After=network-online.target
+Confilicts=coredns.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=0
+ExecStart=/usr/bin/coredns --conf {{ project_template_path }}/coredns/Corefile
+ExecReload=/bin/kill -HUP 
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

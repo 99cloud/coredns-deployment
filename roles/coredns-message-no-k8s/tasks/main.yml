@@ -1,0 +1,52 @@
+- name: Set var coredns message plugin mode var
+  set_fact:
+    coredns_message_mode: "LISTEN"
+  when: coredns_speaker_mode == "initiative"
+
+- name: Set var coredns message plugin mode var
+  set_fact:
+    coredns_message_mode: "ASK"
+  when: coredns_speaker_mode != "initiative"
+
+- name: Set nats auth mode var
+  set_fact:
+    nats_auth_mode: "tls"
+  when: nats_use_tls == "yes"
+
+- name: Set nats auth mode var
+  set_fact:
+    nats_auth_mode: "basic"
+  when: nats_use_tls != "yes"
+
+- name: Copy etcd binary to target
+  copy: 
+    src: "{{ role_path }}/binary/coredns"
+    dest: "/usr/bin/coredns"
+    mode: 0755
+
+- name: Create coredns dir
+  file:
+    path: "{{ project_template_path }}/coredns/"
+    state: directory
+    mode: 0755
+
+- name: "Copy coredns config file corefile to target"
+  template: 
+    src: "{{ role_path }}/templates/Corefile.j2"
+    dest: "{{ project_template_path }}/coredns/Corefile"
+
+- name: "Copy coredns plugin message config file corefile to target"
+  template: 
+    src: "{{ role_path }}/templates/config.yaml.j2"
+    dest: "{{ project_template_path }}/coredns/config.yaml"
+
+- name: Copy coredns systemd template to target
+  template: 
+    src: "{{ role_path }}/templates/coredns_systemd_template.j2"
+    dest: "/etc/systemd/system/coredns.service"
+
+- name: Enable and start coredns service
+  service:
+    name: coredns
+    enabled: yes
+    state: started

@@ -43,6 +43,7 @@ message_queue_password="password"
 message_queue_ca_file_path="{{ project_template_path + '/nats/ca.pem' }}"
 message_queue_key_file_path="{{ project_template_path + '/nats/client-key.pem' }}"
 message_queue_cert_file_path="{{ project_template_path + '/nats/client.pem' }}"
+nats_service_url="127.0.0.1"
 # nats section ends
 
 # coredns management api section starts
@@ -52,6 +53,21 @@ allowed_token="token1 | token2 | token3"
 coredns_api_port=80
 database_tls_dir={{ project_template_path + '/' + 'etcd/' + 'certs' }}
 # coredns management api section ends
+
+# coredns message plugin section starts
+coredns_upstream_address=114.114.114.114
+coredns_service_port=53
+# 填写api service的lb的地址或者hostname
+# 这里为了方便我只写了其中的一个节点的地址，比如 172.16.100.100:8080
+coredns_speaker_service_address="etcd-node1"
+# 注意token必须是上面"allowed_token"中的一个
+initial_data_provider_service_url="{{ 'http://' + coredns_speaker_service_address + '/99cloud/coredns-speaker/1.0.0/hijack-list?token=token1' }}"
+# 建议不小10秒
+ask_frequency=10
+enable_report="false"
+report_frequency=10
+default_report_url="{{ 'http://' + coredns_speaker_service_address + '/99cloud/coredns-speaker/1.0.0/report?token=token1' }}"
+# coredns message plugin section ends
 
 # 不要改，逻辑是在本地先签名证书，所以你运行ansible的时候可以是在一个部署节点上
 # 也可以是在任何一台部署的目标机器上
@@ -64,25 +80,25 @@ etcd-node1
 etcd-node2
 etcd-node3
 #localhost              ansible_connection=local
-# 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+#172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
 
 [nats]
 etcd-node1
 etcd-node2
 etcd-node3
 #localhost              ansible_connection=local
-# 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+#172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
 
 [coredns_api]
 etcd-node1
 etcd-node2
 etcd-node3
 #localhost              ansible_connection=local
-# 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+#172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
 
 [coredns]
 etcd-node1
 etcd-node2
 etcd-node3
 #localhost              ansible_connection=local
-# 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+#172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel

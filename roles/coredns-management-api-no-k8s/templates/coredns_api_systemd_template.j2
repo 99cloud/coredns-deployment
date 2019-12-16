@@ -1,0 +1,15 @@
+[Unit]
+Description=coredns api Service
+After=docker.service
+Requires=docker.service
+After=etcd.service
+Requires=etcd.service
+ 
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecReload=/usr/bin/docker restart coredns-speaker
+ExecStart=/usr/bin/docker start coredns-speaker
+ 
+[Install]
+WantedBy=multi-user.target

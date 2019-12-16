@@ -18,3 +18,9 @@
   tasks:
     - include_role:
         name: coredns-management-api-no-k8s
+
+- name: Install coredns
+  hosts: coredns
+  tasks:
+    - include_role:
+        name: coredns-message-no-k8s

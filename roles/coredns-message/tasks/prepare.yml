@@ -6,7 +6,7 @@
 - name: Set var coredns message plugin mode var
   set_fact:
     coredns_message_mode: "ASK"
-  when: coredns_speaker_mode == "initiative"
+  when: coredns_speaker_mode != "initiative"
 
 - name: Set nats auth mode var
   set_fact:

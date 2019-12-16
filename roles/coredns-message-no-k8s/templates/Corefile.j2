@@ -1,0 +1,6 @@
+.:{{ coredns_service_port }} {
+    message {{ project_template_path }}/coredns/config.yaml
+    log
+    errors
+    forward . {{ coredns_upstream_address }}
+}

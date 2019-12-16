@@ -1,0 +1,26 @@
+config:
+  project-name: setting1
+  server-ip: {{ ansible_default_ipv4.address }}
+  server-name: {{ ansible_hostname }}
+  initial-data-provider-service-url: {{ initial_data_provider_service_url }}
+  message-queue: NATS
+  mode: {{ coredns_message_mode }}
+  ask-frequency: {{ ask_frequency }}
+  enable-report: {{ enable_report }}
+  report-frequency: {{ report_frequency }}
+  reports:
+    - name: coredns-speaker
+      auth-mode: none
+      url: {{ default_report_url }}
+      enable: true
+  message-queues:
+    - name: NATS
+      auth-mode: {{ nats_auth_mode }}
+      address: {{ nats_service_url }}
+      port: 4222
+      subject: {{ message_queue_subject }}
+      user-name: {{ message_queue_username }}
+      password: {{ message_queue_password }}
+      tls-ca-file-path: {{ message_queue_ca_file_path }}
+      tls-cert-file-path: {{ message_queue_key_file_path }}
+      tls-key-file-path: {{ message_queue_cert_file_path }}
