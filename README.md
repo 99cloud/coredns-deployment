@@ -23,6 +23,7 @@
 ## 文档使用注意事项
 
 1. 请不要漏掉文档流程的中任何一个步骤，以免不必要的错误
+2. 本项目并不是完全离线安装，可以说90%都是离线的，但有些还是依赖internet
 
 ### 部署架构
 
@@ -182,9 +183,88 @@
 3. 在*部署节点上*运行命令
 
     ```console
-    ansible-playbook -i inventory_no_k8s.example deploy_all_without_k8s.yml
+    $ ansible-playbook -i inventory_no_k8s.example deploy_all_without_k8s.yml
     ```
 
 ### 创建coredns的lb
 
 1. 在云平台上创建lb把*节点1、节点2、节点3* 做为该lb的member
+
+### 检验安装
+
+1. 检验coredns api运行正常
+
+    ```console
+    # 检查节点1
+    # 命令应该返回结果 { "mgs": "OK" }
+    $ curl -X PUT http://etcd-node1/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 /
+    -d "{\"id\":\"123124\",\"action\":\"create\",\"domain\":\"www.ccc.com\",\"answers\":[{\"domain\":\"www.ccc.com\",\"type\":\"A\",\"ip\":\"12.12.12.12\"}]}"
+
+    # 检查节点2
+    # 命令应该返回结果 { "mgs": "OK" }
+    $ ^etcd-node1^etcd-node2^
+
+    # 检查节点3
+    # 命令应该返回结果 { "mgs": "OK" }
+    $ ^etcd-node2^etcd-node3^
+
+    # load balancer
+    # 命令应该返回结果 { "mgs": "OK" }
+    $ ^etcd-node3^load balance的地址^
+    ```
+
+1. 检验coredns运行正常
+
+    ```console
+    # 检查节点1
+    $ dig www.ccc.com @10.0.0.28
+
+    # 检查节点2
+    $ dig www.ccc.com @10.0.0.29
+
+    # 检查节点3
+    $ dig www.ccc.com @10.0.0.30
+
+    # load balancer
+    $ dig www.ccc.com @[load balancer地址]
+
+    # 返回结果
+    # ... dig相关信息
+    ;; OPT PSEUDOSECTION:
+    ; EDNS: version: 0, flags:; udp: 4096
+    ; COOKIE: 7a71203fbcaa2394 (echoed)
+    ;; QUESTION SECTION:
+    ;www.ccc.com.			IN	A
+
+    ;; ANSWER SECTION:
+    www.ccc.com.		0	IN	A	12.12.12.12
+
+    ;; ADDITIONAL SECTION:
+    _udp.www.ccc.com.	0	IN	SRV	0 0 59460 .
+    # ... dns server信息
+    ```
+
+### Trouble shooting
+
+1. 安装中出现*docker pull image timeout*，下载我预先制作好的镜像*99cloud/coredns-management-api*失败了
+
+    > 检查网络是否可以到外网
+
+    > 检查dns域名是否可以解析到docker.io
+
+2. curl的时候出现*deadline exceed错误*，数据库连接超时经常出现的问题，可以做以下检查定位错误
+
+    ```console
+    # 节点1、2、3中的任意一个节点运行命令
+    # 进入容器
+    $ docker exec -it coredns-speaker /bin/sh
+    容器:/> cd /etc/coredns-edge-deployment/etcd/certs
+    容器:/> etcdctl --cacert=etcd-client-ca.crt --cert=etcd-client.crt --key=etcd-client.key --endpoints=https://[你的etcd的数据库的地址一般有3个]:2379 member list -w table --debug
+    # 以上命令会打印debug的日志，就会看到问题输出了
+    ```
+
+3. dig的时候没有将我们分流的域名给出正确的应答
+
+    > 我们使用的coredns的ASK模式，这个模式是定期（10秒）去问coredns api获取最新数据，所以请等待10秒再试一下
+
+    > 如果过了时间还是没有返回正确结果检查容器日志 *docker logs coredns-speaker -f*
