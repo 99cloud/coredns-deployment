@@ -73,7 +73,7 @@
                     |----- 节点3:{{ coredns_api_port }}
 
                     |----- 节点1:{{ coredns_service_port }}
-    coredns api lb--|----- 节点2:{{ coredns_service_port }}
+    coredns lb------|----- 节点2:{{ coredns_service_port }}
                     |----- 节点3:{{ coredns_service_port }}
 
     ```
