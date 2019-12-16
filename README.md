@@ -6,14 +6,10 @@
 
 1. 在非k8s集群里部署*coredns*、*coredns-speaker(api)*、*消息队列nats(可选)*、*etcd数据库集群*
 
-## 文档使用注意事项
-
-1. 请不要漏掉文档流程的中任何一个步骤，以免不必要的错误
-
-### 软件架构
+## 软件架构
 
     ```console
-    # 下发规则
+    # 下发规则(no nats)
                                    |---- coredns api节点1 <--->etcd节点1、etcd节点2、etcd节点3(内置lb)|                                          |------coredns节点1
     mep ----> coredns api lb <---->|---- coredns api节点2 <--->etcd节点1、etcd节点2、etcd节点3(内置lb)| <-----> coredns api lb <--从api获取数据--->|------coredns节点2
                                    |---- coredns api节点3 <--->etcd节点1、etcd节点2、etcd节点3(内置lb)|                                          |------coredns节点3
@@ -23,6 +19,10 @@
     解析域名请求 ---> coredns lb <--->|---- coredns节点2 ----|
                                     |---- coredns节点3 ----|                           
     ```
+
+## 文档使用注意事项
+
+1. 请不要漏掉文档流程的中任何一个步骤，以免不必要的错误
 
 ### 部署架构
 
@@ -51,6 +51,15 @@
 | 节点1/部署节点 | 10.0.0.28 | etcd-node1 | 4 | 16Gi | 250Gi | kvm guest |
 | 节点2 | 10.0.0.29 | etcd-node2 | 4 | 16Gi | 250Gi | kvm guest |
 | 节点3 | 10.0.0.30 | etcd-nope3 | 4 | 16Gi | 250Gi | kvm guest |
+
+1. 服务在主机上承载的模式
+
+|  | coredns | coredns api | nats(消息队列) | etcd（数据库） |
+| --- | --- | --- | --- | --- |
+| 部署节点 | systemd | container + systemd | N/A | systemd |
+| 节点1 | systemd | container + systemd | N/A | systemd |
+| 节点2 | systemd | container + systemd | N/A | systemd |
+| 节点3 | systemd | container + systemd | N/A | systemd |
 
 1. 不在脚本中部署且需要自己部署的的组件Load balancer:
 
