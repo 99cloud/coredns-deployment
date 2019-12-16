@@ -170,3 +170,7 @@
     ```console
     ansible-playbook -i inventory_no_k8s.example deploy_all_without_k8s.yml
     ```
+
+### 创建coredns的lb
+
+1. 在云平台上创建lb把*节点1、节点2、节点3* 做为该lb的member
