@@ -35,7 +35,7 @@
 | 节点2 | Yes | Yes | Optional | Yes | No |
 | 节点3 | Yes | Yes | Optional | Yes | No |
 
-1. 文档中默认的测试走通的环境配置如下:
+2. 文档中默认的测试走通的环境配置如下:
 
 |  | ip | hostname | os | iso | 运行环境 |
 | --- | --- | --- | --- | --- | --- |
@@ -44,7 +44,7 @@
 | 节点2 | 10.0.0.29 | etcd-node2 | centos7-1810 | CentOS-7-x86_64-Minimal-1810.iso | kvm guest |
 | 节点3 | 10.0.0.30 | etcd-nope3 | centos7-1810 | CentOS-7-x86_64-Minimal-1810.iso | kvm guest |
 
-1. 文档中默认的测试走通的硬件配置如下:
+3. 文档中默认的测试走通的硬件配置如下:
 
 |  | ip | hostname | cpu | memory | disk | 运行环境 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -52,7 +52,7 @@
 | 节点2 | 10.0.0.29 | etcd-node2 | 4 | 16Gi | 250Gi | kvm guest |
 | 节点3 | 10.0.0.30 | etcd-nope3 | 4 | 16Gi | 250Gi | kvm guest |
 
-1. 服务在主机上承载的模式
+4. 服务在主机上承载的模式
 
 |  | coredns | coredns api | nats(消息队列) | etcd（数据库） |
 | --- | --- | --- | --- | --- |
@@ -60,26 +60,26 @@
 | 节点2 | systemd | container + systemd | N/A | systemd |
 | 节点3 | systemd | container + systemd | N/A | systemd |
 
-1. 所有组件的systemd名称
+5. 所有组件的systemd名称
 
 |  | coredns | coredns api | nats(消息队列) | etcd（数据库） |
 | --- | --- | --- | --- | --- |
 | systemd名称 | coredns | coredns-api | N/A | etcd |
 
-1. 不在脚本中部署且需要自己部署的的组件Load balancer:
+6. 不在脚本中部署且需要自己部署的的组件Load balancer:
 
 |  | coredns | coredns api | nats(消息队列) | etcd（数据库） |
 | --- | --- | --- | --- | --- |
 | Load balancer | Yes | Yes | Optional | No |
 
-1. Load balancer的配置:
+7. Load balancer的配置:
 
 |  | member port | protocal |
 | --- | --- | --- |
 | coredns lb | {{ coredns_service_port }}(根据参数*coredns_service_port*，默认53) | UDP |
 | coredns api lb | {{ coredns_api_port }}(根据参数*coredns_api_port*，默认80) | TCP |
 
-1. Load balancer的配置:
+8. Load balancer的配置:
 
     ```console
                     |----- 节点1:{{ coredns_api_port }}
@@ -103,17 +103,17 @@
     10.0.0.30	etcd-node3
     ```
 
-1. 关闭三台部署主机*selinux*,修改*/etc/selinux/config*为*SELINUX=disabled*
-1. 重启这些主机让关闭selinux操作生效
-1. 登陆到部署节点*节点1/部署节点*
-1. 在*部署节点上*下载repo
+2. 关闭三台部署主机*selinux*,修改*/etc/selinux/config*为*SELINUX=disabled*
+3. 重启这些主机让关闭selinux操作生效
+4. 登陆到部署节点*节点1/部署节点*
+5. 在*部署节点上*下载repo
 
     ```console
     $ yum install git -y
     $ git clone https://user:password@github.com/99cloud/coredns-deployment.git
     ```
 
-1. 在*部署节点上*确认所有的节点通过主机名可以被访问
+6. 在*部署节点上*确认所有的节点通过主机名可以被访问
 
     ```console
     $ ping etcd-node1 # 解析10.0.0.28
@@ -121,13 +121,13 @@
     $ ping etcd-node3 # 解析10.0.0.30
     ```
 
-1. (可选)确保三台主机的*53*端口和*80*端口都没被占用
-1. 创建外部的lb给到*coredns api*作为负载均衡
+7. (可选)确保三台主机的*53*端口和*80*端口都没被占用
+8. 创建外部的lb给到*coredns api*作为负载均衡
 
 ### 开始部署
 
 1. 在*部署节点上*进入项目目录*coredns-deployment*
-1. 修改 *[path]/coredns-deployment/inventory_no_k8s.example*文件
+2. 修改 *[path]/coredns-deployment/inventory_no_k8s.example*文件
 
     ```console
     etcd_node1_ip="10.0.0.28" # 如果修改了ip，只需要改这里
@@ -179,7 +179,7 @@
     # 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
     ```
 
-1. 在*部署节点上*运行命令
+3. 在*部署节点上*运行命令
 
     ```console
     ansible-playbook -i inventory_no_k8s.example deploy_all_without_k8s.yml
