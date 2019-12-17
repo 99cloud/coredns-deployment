@@ -413,3 +413,56 @@
     ```
 
 3. 运行命令 `ansible-playbook -i inventory_k8s.example deploy_all_with_k8s.yml`
+
+### 检验安装
+
+1. 检验coredns api运行正常
+
+    ```console
+    # 检查节点1
+    # 命令应该返回结果 { "mgs": "OK" }
+    $ curl -X PUT http://etcd-node1/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 /
+    -d "{\"id\":\"123124\",\"action\":\"create\",\"domain\":\"www.ccc.com\",\"answers\":[{\"domain\":\"www.ccc.com\",\"type\":\"A\",\"ip\":\"12.12.12.12\"}]}"
+
+    # 检查节点2
+    # 命令应该返回结果 { "mgs": "OK" }
+    $ ^etcd-node1^etcd-node2^
+
+    # 检查节点3
+    # 命令应该返回结果 { "mgs": "OK" }
+    $ ^etcd-node2^etcd-node3^
+
+    # load balancer
+    # 命令应该返回结果 { "mgs": "OK" }
+    $ ^etcd-node3^coredns-speaker-svc.coredns-edge.svc^
+
+1. 检验coredns运行正常
+
+    ```console
+    # 检查节点1
+    $ dig www.ccc.com @10.0.0.28
+
+    # 检查节点2
+    $ dig www.ccc.com @10.0.0.29
+
+    # 检查节点3
+    $ dig www.ccc.com @10.0.0.30
+
+    # load balancer
+    $ dig www.ccc.com @coredns.coredns-edge.svc
+
+    # 返回结果
+    # ... dig相关信息
+    ;; OPT PSEUDOSECTION:
+    ; EDNS: version: 0, flags:; udp: 4096
+    ; COOKIE: 7a71203fbcaa2394 (echoed)
+    ;; QUESTION SECTION:
+    ;www.ccc.com.			IN	A
+
+    ;; ANSWER SECTION:
+    www.ccc.com.		0	IN	A	12.12.12.12
+
+    ;; ADDITIONAL SECTION:
+    _udp.www.ccc.com.	0	IN	SRV	0 0 59460 .
+    # ... dns server信息
+    ```
