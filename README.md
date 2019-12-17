@@ -128,7 +128,7 @@
 ### 开始部署
 
 1. 在*部署节点上*进入项目目录*coredns-deployment*
-2. 修改 *[path]/coredns-deployment/inventory_no_k8s.example*文件
+2. 修改 *[path]/coredns-deployment/inventory_k8s.example*文件中那些不符合你需求的配置
 
     ```console
     etcd_node1_ip="10.0.0.28" # 如果修改了ip，只需要改这里
@@ -268,3 +268,148 @@
     > 我们使用的coredns的ASK模式，这个模式是定期（10秒）去问coredns api获取最新数据，所以请等待10秒再试一下
 
     > 如果过了时间还是没有返回正确结果检查容器日志 *docker logs coredns-speaker -f*
+
+## 在k8s解决方案的部署
+
+1. 在非k8s集群里部署*coredns*、*coredns-speaker(api)*、*消息队列nats(可选)*、*etcd数据库集群*
+
+## 软件架构
+
+    ```console
+    # 下发规则(no nats)
+                                   |--- coredns api pod1 <---> |                                                                 |------coredns pod1
+    mep ---> coredns api svc <---->|--- coredns api pod2 <---> |<--->etcd peer service| <----> coredns api svc <--从api获取数据--->|------coredns pod2
+                                   |--- coredns api pod3 <---> |                                                                 |------coredns pod3
+
+    # 下发规则(with nats)
+                                   |--- coredns api pod1 <---> |                                                        |------coredns pod1
+    mep ---> coredns api svc <---->|--- coredns api pod2 <---> | ---> message queue(nats) <--- 从nats消息队列里获取数据 --->|------coredns pod2
+                                   |--- coredns api pod3 <---> |                                                        |------coredns pod3           
+
+    # 使用dns
+                                     |---- coredns pod1 ----|
+    解析域名请求 ---> coredns svc <--->|---- coredns pod2 ----|
+                                     |---- coredns pod3 ----|                           
+    ```
+
+## 文档使用注意事项
+
+1. 请不要漏掉文档流程的中任何一个步骤，以免不必要的错误
+2. 本项目并不是完全离线安装，可以说90%都是离线的，但有些还是依赖internet，可以通过预先下载镜像和制作虚拟机镜像来解决
+
+    > image: 99cloud/coredns-management-api:latest
+
+    > image: 99cloud/coredns-edge:latest
+
+    > software: docker
+
+    > software: git(可选如果你预先复制了repo)
+
+### 部署架构
+
+1. 取决于k8s的架构
+
+### 准备工作
+
+1. (可选)如果是在openshift平台上运行请使用命令`oc edit oc edit scc restricted`，并修改 `runAsUser: RunAsAny`
+2. 在*部署节点上*下载repo
+
+    ```console
+    $ yum install git,ansible -y
+    $ git clone https://user:password@github.com/99cloud/coredns-deployment.git
+    ```
+3. 请确保kubectl已经正确配置为管理身份
+
+### 开始部署
+
+1. 在*部署节点上*进入项目目录*coredns-deployment*
+2. 修改 *[path]/coredns-deployment/inventory_k8s.example*文件中那些不符合你需求的配置
+
+    ```console
+    [all:vars]
+    # basic section starts
+    oc_binary="/usr/bin/kubectl"
+    namespace_coredns_edge="coredns-edge"
+    caas_cluster_domain="cluster.local"
+    # 当选择passive模式的话，将跳过nats消息队列的部署
+    coredns_speaker_mode="initiative"
+    # basic section ends
+
+    # tls sign section starts
+    # 证书签名按需修改
+    tls_c="CHINA"
+    tls_l="Shanghai"
+    tls_o="99cloud"
+    tls_st="Shanghai"
+    tls_ou="CAAS"
+    # tls sign section ends
+
+    # etcd operator section starts
+    # 默认就好了
+    etcd_peer_svc_name="etcd-coredns-speaker"
+    # 不要修用tls安全
+    etcd_use_tls="yes"
+    # 修改为k8s集群山现有的storage class
+    etcd_storage_class_name="alicloud-nas"
+    # etcd数据库的磁盘大小
+    etcd_storage_size=30
+    # 如果使用tls请忽略
+    etcd_username=username
+    etcd_password=password
+    # etcd operator section ends
+
+    # nats section starts
+    # 使用tls
+    nats_use_tls="yes"
+    nats_cluster_name="nats-cluster"
+    # 消息队列的频道
+    message_queue_subject="msg.edge.coredns.99cloud"
+    # 如果用tls请忽略
+    message_queue_username="username"
+    message_queue_password="password"
+    # nats section ends
+
+    # coredns management api section starts
+    # 如果数据库是tls必须是https
+    database_connection_protocol="https"
+    api_auth_mode="token" # 目前只支持token模式认证
+    allowed_token="token1 | token2 | token3"
+    # coredns management api section ends
+
+    # coredns message plugin section starts
+    coredns_cluster_name=coredns
+    coredns_service_port=53
+    coredns_upstream_address=114.114.114.114
+    coredns_speaker_service_address="{{ 'coredns-speaker-svc.' + namespace_coredns_edge + '.svc' }}"
+    # 注意token必须是上面"allowed_token"中的一个
+    initial_data_provider_service_url="{{ coredns_speaker_service_address + '/99cloud/coredns-speaker/1.0.0/hijack-list?token=token1' }}"
+    # 建议不小10秒
+    # 如果设置coredns_speaker_mode="initiative"请忽略
+    ask_frequency=10
+    # 静态pod的目录地址
+    pod_manifest_path="/etc/kubernetes/manifests"
+    # 不要修改除非你重新制作镜像
+    conatiner_config_dir_path="/etc/coredns/"
+    # coredns message plugin section ends
+
+    # k8s 任何一个master节点
+    [master1]
+    localhost              ansible_connection=local
+    # 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+
+    # 所有你想要部署的coredns的节点
+    # 注意这些节点必须是受k8s管理的节点
+    [dns]
+    localhost              ansible_connection=local
+    # 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+    # 172.16.60.18  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+    # 172.16.60.19  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+
+    # 不要改，逻辑是在本地先签名证书，所以你运行ansible的时候可以是在一个部署节点上
+    # 也可以是在任何一台部署的目标机器上或者和[master1]的机器中的任何一台上
+    # 因为部署dns的时候是static pod，而且部署dns的机器不一定是master节点
+    [tls]
+    localhost              ansible_connection=local                       
+    ```
+
+3. 运行命令 `ansible-playbook -i inventory_k8s.example deploy_all_with_k8s.yml`

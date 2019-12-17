@@ -38,6 +38,11 @@
     src: "{{ role_path }}/templates/coredns_pod.yaml.j2"
     dest: "{{ project_template_path }}/coredns/coredns_pod.yaml"
 
+- name: Copy coredns service template to target
+  template: 
+    src: "{{ role_path }}/templates/coredns_svc.yaml.j2"
+    dest: "{{ project_template_path }}/coredns/coredns_svc.yaml"
+
 - name: Remove old config map
   shell: "{{ oc_binary }} delete configmap coredns-config -n {{ namespace_coredns_edge }}"
   ignore_errors: "yes"

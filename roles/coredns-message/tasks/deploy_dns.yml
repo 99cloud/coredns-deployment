@@ -11,3 +11,6 @@
   template: 
     src: "{{ role_path }}/templates/coredns_pod.yaml.j2"
     dest: "{{ pod_manifest_path }}/static-pod-coredns-edge.yaml"
+
+- name: "Create coredns svc"
+  shell: "{{ oc_binary }} apply -f {{ project_template_path }}/coredns/coredns_svc.yaml"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: coredns
+spec:
+  selector:
+    edge: static-pod-coredns
+  ports:
+    - protocol: {{ coredns_svc_protocal }}
+      port: 53
+      targetPort: {{ coredns_service_port }}
+  type: {{ coredns_svc_type }}
+{% if coredns_svc_type == "ExternalName" %}
+  externalName: {{ coredns_svc_external_name }}
+{% endif %}

@@ -64,6 +64,10 @@ default_report_url="{{ coredns_speaker_service_address + '/99cloud/coredns-speak
 pod_manifest_path="/home/simon/openshift.local.clusterup/static-pod-manifests"
 # 不要修改除非你重新制作镜像
 conatiner_config_dir_path="/etc/coredns/"
+coredns_svc_protocal="UDP"
+# ClusterIP | NodePort | LoadBalancer | ExternalName
+coredns_svc_type="ClusterIP"
+coredns_svc_external_name="coredns.example.com"
 # coredns message plugin section ends
 
 [master1]
