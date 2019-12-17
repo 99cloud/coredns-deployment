@@ -1,0 +1,59 @@
+- name: Create out dir
+  file:
+    path: "{{ message_local_tls_certs_dir_path }}/nats"
+    state: directory
+    mode: 0755
+
+- name: Copy ca-config.json template to target
+  template: 
+    src: "{{ role_path }}/templates/ca-config.json.j2"
+    dest: "{{ message_local_tls_certs_dir_path }}/nats/ca-config.json"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Copy ca-csr.json template to target
+  template: 
+    src: "{{ role_path }}/templates/ca-csr.json.j2"
+    dest: "{{ message_local_tls_certs_dir_path }}/nats/ca-csr.json"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Copy server.json template to target
+  template: 
+    src: "{{ role_path }}/templates/server.json.j2"
+    dest: "{{ message_local_tls_certs_dir_path }}/nats/server.json"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Copy route.json template to target
+  template: 
+    src: "{{ role_path }}/templates/route.json.j2"
+    dest: "{{ message_local_tls_certs_dir_path }}/nats/route.json"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Copy client.json template to target
+  template: 
+    src: "{{ role_path }}/templates/client.json.j2"
+    dest: "{{ message_local_tls_certs_dir_path }}/nats/client.json"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Create root cert
+  shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca -"
+  args:
+    chdir: "{{ message_local_tls_certs_dir_path }}/nats"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Create server cert
+  shell: "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=server server.json | cfssljson -bare server"
+  args:
+    chdir: "{{ message_local_tls_certs_dir_path }}/nats"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Create route cert
+  shell: "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=route route.json | cfssljson -bare route"
+  args:
+    chdir: "{{ message_local_tls_certs_dir_path }}/nats"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"
+
+- name: Create client cert
+  shell: "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client client.json | cfssljson -bare client"
+  args:
+    chdir: "{{ message_local_tls_certs_dir_path }}/nats"
+  when: coredns_speaker_mode == "initiative" and nats_use_tls == "yes"

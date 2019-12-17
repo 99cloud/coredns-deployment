@@ -1,21 +1,32 @@
 - name: Preparation
   hosts: master1
   tasks:
-  #- include_role:
-  #     name: prepareation
-  #- include_role:
-  #     name: etcd-operator
-  #- include_role:
-  #     name: nats-operator
-  #- include_role:
-  #     name: coredns-management-api
   - include_role:
-       name: coredns-message
-       tasks_from: prepare
+       name: prepareation
+  - include_role:
+       name: etcd-operator
+
+- name: Sign tls locally
+  hosts: tls
+  tasks:
+  - include_role:
+       name: nats-operator
+       tasks_from: gen_tls_certs
+
+- name: Preparation2
+  hosts: master1
+  tasks:
+  - include_role:
+       name: nats-operator
+  - include_role:
+       name: coredns-management-api
 
 - name: Deploy dns static pod
   hosts: dns
   tasks:
+  - include_role:
+       name: coredns-message
+       tasks_from: prepare
   - include_role:
      name: coredns-message
      tasks_from: deploy_dns

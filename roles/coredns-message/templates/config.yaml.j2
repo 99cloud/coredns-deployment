@@ -2,7 +2,7 @@ config:
   project-name: setting1
   server-ip: 127.0.0.1 # doesn`t play a role
   server-name: {{ coredns_cluster_name + '.' + namespace_coredns_edge + '.svc' }}
-  initial-data-provider-service-url: {{ initial_data_provider_service_url }}
+  initial-data-provider-service-url: {{ 'http://' + initial_data_provider_service_url }}
   message-queue: NATS
   mode: {{ coredns_message_mode }}
   ask-frequency: {{ ask_frequency }}
@@ -11,7 +11,7 @@ config:
   reports:
     - name: coredns-speaker
       auth-mode: none
-      url: {{ default_report_url }}
+      url: {{ 'http://' + default_report_url }}
       enable: true
   message-queues:
     - name: NATS
@@ -22,5 +22,5 @@ config:
       user-name: {{ message_queue_username }}
       password: {{ message_queue_password }}
       tls-ca-file-path: {{ message_queue_ca_file_path }}
-      tls-cert-file-path: {{ message_queue_key_file_path }}
-      tls-key-file-path: {{ message_queue_cert_file_path }}
+      tls-cert-file-path: {{ message_queue_cert_file_path }}
+      tls-key-file-path: {{ message_queue_key_file_path }}

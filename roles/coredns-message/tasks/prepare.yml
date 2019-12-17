@@ -1,3 +1,8 @@
+- name: Copy signed certs to target dir
+  copy:
+    src: "{{ message_local_tls_certs_dir_path }}/nats/"
+    dest: "{{ project_template_path }}/nats/certs"
+
 - name: Set var coredns message plugin mode var
   set_fact:
     coredns_message_mode: "LISTEN"

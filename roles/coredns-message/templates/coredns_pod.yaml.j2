@@ -7,20 +7,33 @@ metadata:
     edge: static-pod-coredns
 spec:
   restartPolicy: Always
+  dnsPolicy: ClusterFirstWithHostNet
   hostNetwork: true
   volumes:
-  - name: coredns-config-vol
-    configMap:
-      name: coredns-config
+  - hostPath:
+      path: {{ project_template_path }}/coredns
+      type: DirectoryOrCreate
+    name: coredns-config-vol
+{% if coredns_message_mode == "LISTEN" %}
+  - hostPath:
+      path: {{ project_template_path }}/nats/certs
+      type: DirectoryOrCreate
+    name: nat-tls
+{% endif %}
   containers:
   - name: coredns-container
-    #image: 99cloud/coredns-edge:latest
-    image: busybox
+    image: 99cloud/coredns-edge:latest
+    #image: busybox
+    #command: ["sh","-c","sleep 100000000"]
     imagePullPolicy: IfNotPresent
-    command: ["sh","-c","sleep 100000000"]
     securityContext:
       privileged: true
     volumeMounts:
     - name: coredns-config-vol
-      mountPath: /etc/coredns-edge
+      mountPath: {{ conatiner_config_dir_path }}
       readOnly: true
+{% if coredns_message_mode == "LISTEN" %}
+    - name: nat-tls
+      mountPath: {{ project_template_path }}/nats
+      readOnly: true
+{% endif %}

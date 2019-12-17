@@ -40,6 +40,7 @@ message_queue_password="password"
 message_queue_ca_file_path="{{ project_template_path + '/nats/ca.pem' }}"
 message_queue_key_file_path="{{ project_template_path + '/nats/client-key.pem' }}"
 message_queue_cert_file_path="{{ project_template_path + '/nats/client.pem' }}"
+message_local_tls_certs_dir_path="/etc/coredns-edge-local-sign/"
 # nats section ends
 
 # coredns management api section starts
@@ -52,7 +53,7 @@ allowed_token="token1 | token2 | token3"
 coredns_cluster_name=coredns
 coredns_service_port=53
 coredns_upstream_address=114.114.114.114
-coredns_speaker_service_address="coredns-speaker-deployment.coredns-speaker.svc"
+coredns_speaker_service_address="{{ 'coredns-speaker-svc.' + namespace_coredns_edge + '.svc' }}"
 # 注意token必须是上面"allowed_token"中的一个
 initial_data_provider_service_url="{{ coredns_speaker_service_address + '/99cloud/coredns-speaker/1.0.0/hijack-list?token=token1' }}"
 # 建议不小10秒
@@ -61,6 +62,8 @@ enable_report="false"
 report_frequency=10
 default_report_url="{{ coredns_speaker_service_address + '/99cloud/coredns-speaker/1.0.0/report?token=token1' }}"
 pod_manifest_path="/home/simon/openshift.local.clusterup/static-pod-manifests"
+# 不要修改除非你重新制作镜像
+conatiner_config_dir_path="/etc/coredns/"
 # coredns message plugin section ends
 
 [master1]
@@ -68,8 +71,15 @@ localhost              ansible_connection=local
 # 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
 
 # define all host you want to deploy dns
+# 注意这些节点必须是受k8s管理的节点
 [dns]
 localhost              ansible_connection=local
 # 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
 # 172.16.60.18  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
 # 172.16.60.19  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
+
+# 不要改，逻辑是在本地先签名证书，所以你运行ansible的时候可以是在一个部署节点上
+# 也可以是在任何一台部署的目标机器上
+# 因为部署dns的时候是static pod，而且部署dns的机器不一定是master节点
+[tls]
+localhost              ansible_connection=local
