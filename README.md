@@ -421,20 +421,20 @@
     ```console
     # 检查节点1
     # 命令应该返回结果 { "mgs": "OK" }
-    $ curl -X PUT http://etcd-node1/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 /
+    $ curl -X PUT http://[coredns-node1-ip-or-name]/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 /
     -d "{\"id\":\"123124\",\"action\":\"create\",\"domain\":\"www.ccc.com\",\"answers\":[{\"domain\":\"www.ccc.com\",\"type\":\"A\",\"ip\":\"12.12.12.12\"}]}"
 
     # 检查节点2
     # 命令应该返回结果 { "mgs": "OK" }
-    $ ^etcd-node1^etcd-node2^
+    $ ^[coredns-node1-ip-or-name]^[coredns-node2-ip-or-name]^
 
-    # 检查节点3
+    # 检查其他节点...
     # 命令应该返回结果 { "mgs": "OK" }
-    $ ^etcd-node2^etcd-node3^
+    $ ^[coredns-node1-ip-or-name]^[coredns-nodeX-deploy-node-ip-or-name]^
 
-    # load balancer
+    # 坚持 coredns 的 load balancer
     # 命令应该返回结果 { "mgs": "OK" }
-    $ ^etcd-node3^coredns-speaker-svc.coredns-edge.svc^
+    $ ^[coredns-node1-ip-or-name]^coredns-speaker-svc.coredns-edge.svc^
 
 1. 检验coredns运行正常
 
@@ -442,11 +442,8 @@
     # 检查节点1
     $ dig www.ccc.com @10.0.0.28
 
-    # 检查节点2
-    $ dig www.ccc.com @10.0.0.29
-
-    # 检查节点3
-    $ dig www.ccc.com @10.0.0.30
+    # 检查节点x...
+    $ dig www.ccc.com @xx.xx.xx.xx
 
     # load balancer
     $ dig www.ccc.com @coredns.coredns-edge.svc
