@@ -1,22 +1,23 @@
 [all:vars]
-# basic section starts
+# <basic section starts>
 project_template_path="/etc/coredns-edge-deployment"
 go_path="/root/go"
 oc_binary="/usr/bin/kubectl"
 namespace_coredns_edge="coredns-edge"
 caas_cluster_domain="cluster.local"
 coredns_speaker_mode="initiative"
-# basic section ends
+offline="no"
+# </basic section ends>
 
-# tls sign section starts
+# <tls sign section starts>
 tls_c="CHINA"
 tls_l="Shanghai"
-tls_o="99cloud"
+tls_o="Your Orgnization"
 tls_st="Shanghai"
 tls_ou="CAAS"
-# tls sign section ends
+# </tls sign section ends>
 
-# etcd operator section starts
+# <etcd operator section starts>
 etcd_operator_repo="https://github.com/coreos/etcd-operator.git"
 etcd_peer_svc_name="etcd-coredns-speaker"
 # so for we only accept 'yes' or other than 'yes'
@@ -29,27 +30,27 @@ etcd_storage_size=30
 etcd_cluster_size=3
 etcd_username=username
 etcd_password=password
-# etcd operator section ends
+# </etcd operator section ends>
 
-# nats section starts
+# <nats section starts>
 nats_use_tls="yes"
 nats_cluster_name="nats-cluster"
-message_queue_subject="msg.edge.coredns.99cloud"
+message_queue_subject="msg.edge.coredns"
 message_queue_username="username"
 message_queue_password="password"
 message_queue_ca_file_path="{{ project_template_path + '/nats/ca.pem' }}"
 message_queue_key_file_path="{{ project_template_path + '/nats/client-key.pem' }}"
 message_queue_cert_file_path="{{ project_template_path + '/nats/client.pem' }}"
 message_local_tls_certs_dir_path="/etc/coredns-edge-local-sign/"
-# nats section ends
+# </nats section ends>
 
-# coredns management api section starts
+# <coredns management api section starts>
 database_connection_protocol="https"
 api_auth_mode="token" # so far we only support token
 allowed_token="token1 | token2 | token3"
-# coredns management api section ends
+# </coredns management api section ends>
 
-# coredns message plugin section starts
+# <coredns message plugin section starts>
 coredns_cluster_name=coredns
 coredns_service_port=53
 coredns_upstream_address=114.114.114.114
@@ -61,14 +62,17 @@ ask_frequency=10
 enable_report="false"
 report_frequency=10
 default_report_url="{{ coredns_speaker_service_address + '/99cloud/coredns-speaker/1.0.0/report?token=token1' }}"
-pod_manifest_path="/home/simon/openshift.local.clusterup/static-pod-manifests"
+# k8s=/etc/kubernetes/manifests caas(openshift)=/etc/origin/node/pods
+# pod_manifest_path="/home/simon/openshift.local.clusterup/static-pod-manifests"
+pod_manifest_path="/etc/origin/node/pods"
 # 不要修改除非你重新制作镜像
 conatiner_config_dir_path="/etc/coredns/"
 coredns_svc_protocal="UDP"
 # ClusterIP | NodePort | LoadBalancer | ExternalName
-coredns_svc_type="ClusterIP"
+# coredns_svc_type="ClusterIP"
+coredns_svc_type="NodePort"
 coredns_svc_external_name="coredns.example.com"
-# coredns message plugin section ends
+# </coredns message plugin section ends>
 
 [master1]
 localhost              ansible_connection=local
