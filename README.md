@@ -106,7 +106,7 @@
     ```console
     $ scp [path]/cfssl [root]@[部署节点]:/usr/bin/
     $ scp [path]/cfssljson [root]@[部署节点]:/usr/bin/
-    $ scp [root]@[部署节点] chmod +x /usr/bin/{cfssl,cfssljson}
+    $ ssh [root]@[部署节点] chmod +x /usr/bin/{cfssl,cfssljson}
     ```
 
 3. 在*部署节点上*准备repo
