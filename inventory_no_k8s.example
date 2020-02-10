@@ -2,6 +2,7 @@
 # basic section starts
 project_template_path="/etc/coredns-edge-deployment"
 coredns_speaker_mode="passive"
+offline="no"
 # basic section ends
 
 # tls sign section starts

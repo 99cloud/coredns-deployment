@@ -19,7 +19,7 @@
 
 ## （offline，非offline可以跳过）准备必要的工具
 
-1. 配置正确的k8s/caas(openshift)集群
+1. 配置正确的k8s/caas(openshift)集群，通常是预先安装好的
 2. 下载以下镜像并打包为tar文件
 
     ```console
@@ -90,19 +90,20 @@
         $ ssh [user]@node docker load -i /root/nats-operator.tar
         $ ssh [user]@node docker load -i /root/nats.tar
         ```
-    
-5. (offline)将预先下载好的Repo复制到*部署节点*上
 
-    ```console
-    $ scp -r [path]/mep-deployment/coredns-deployment/ [user]@[部署节点ip或域名]:/root/
-    ```
+5. 在*部署节点上*准备repo
+    - 选项1-(offline)将预先下载好的Repo复制到*部署节点*上
 
-6. 在*部署节点上*下载repo,或者使用预先下载好的repo
+        ```console
+        $ scp -r [path]/mep-deployment/coredns-deployment/ [user]@[部署节点ip或域名]:/root/
+        ```
 
-    ```console
-    $ yum install git,ansible -y
-    $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
-    ```
+    - 选项2-在*部署节点上*下载repo,或者使用预先下载好的repo
+
+        ```console
+        $ yum install git,ansible -y
+        $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
+        ```
     
 7. 请确保kubectl或者oc命令行工具已经正确配置为管理身份,通常k8s的情况下不需要做任何修改，当你使用caas(openshift)的情况下，运行命令:
 
@@ -250,7 +251,7 @@
     $ curl -X PUT http://coredns-speaker-svc.coredns-edge.svc/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 /
     -d "{\"id\":\"123124\",\"action\":\"create\",\"domain\":\"www.ccc.com\",\"answers\":[{\"domain\":\"www.ccc.com\",\"type\":\"A\",\"ip\":\"12.12.12.12\"}]}"
 
-1. 检验coredns运行正常
+2. 检验coredns运行正常
 
     ```console
     # 检查节点1
@@ -286,7 +287,7 @@
 
 ![test](docs/images/coredns_no_k8s_base.png)
 
-1. 图中*外部Coredns LB*是要另外部署的不在部署脚本中，因为我们并不知道底层的运行环境到底是什么，如果是OpenStack可以用Lbaas，再或者可以自行搭建nginx+keepalive来做负载均衡和Failover
+2. 图中*外部Coredns LB*是要另外部署的不在部署脚本中，因为我们并不知道底层的运行环境到底是什么，如果是OpenStack可以用Lbaas，再或者可以自行搭建nginx+keepalive来做负载均衡和Failover
 
 ## （offline，非offline可以跳过）准备必要的工具
 
@@ -437,28 +438,28 @@
     $ scp -r [path]/mep-deployment/coredns-deployment/ [user]@[部署节点ip或域名]:/root/
     ```
 
-6. 在*部署节点上*下载repo
+6. 在*部署节点上*准备repo
+    - 选项1-(offline)将预先下载好的Repo复制到*部署节点*上
 
-    ```console
-    $ yum install git -y
-    $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
-    ```
+        ```console
+        $ scp -r [path]/mep-deployment/coredns-deployment/ [user]@[部署节点ip或域名]:/root/
+        ```
 
-7. 在*部署节点上*确认所有的节点通过主机名可以被访问
+    - 选项2-在*部署节点上*下载repo,或者使用预先下载好的repo
 
-    ```console
-    $ ping etcd-node1 # 解析10.0.0.28
-    $ ping etcd-node2 # 解析10.0.0.29
-    $ ping etcd-node3 # 解析10.0.0.30
-    ```
+        ```console
+        $ yum install git,ansible -y
+        $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
+        ```
 
-8. 确保三台主机的*53*端口和*80*端口都没被占用
+7. 确保三台主机的*53*端口和*80*端口都没被占用
 
 
 ### 开始部署
 
 1. 在*部署节点上*进入项目目录*coredns-deployment*
-2. 修改 *[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example*文件中那些不符合你需求的配置
+2. (offline)修改 *[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example*文件中参数*offline="yes"*
+3. 修改 *[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example*文件中那些不符合你需求的配置
 
     ```console
     etcd_node1_ip="10.0.0.28" # 如果修改了[etcd]下的节点的ip，这里也要跟着修改
@@ -509,7 +510,7 @@
     # node1  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
     ```
 
-3. 在*部署节点上*运行命令
+4. 在*部署节点上*运行命令
 
     ```console
     $ ansible-playbook -i inventory_no_k8s.example deploy_all_without_k8s.yml
@@ -550,7 +551,7 @@
     $ ^etcd-node3^load balance的地址^
     ```
 
-1. 检验coredns运行正常
+2. 检验coredns运行正常
 
     ```console
     # 检查节点1
