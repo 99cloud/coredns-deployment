@@ -311,6 +311,7 @@
 
     ```console
     # 检查节点1
+    # 注意当你使用"passive"模式，你分流的域名需要最多等待10秒后生效
     $ dig www.ccc.com @[第一台部署coredns的节点的ip或域名]
 
     # 检查节点x...
