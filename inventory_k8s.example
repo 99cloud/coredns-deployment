@@ -68,7 +68,7 @@ enable_report="false"
 report_frequency=10
 default_report_url="{{ coredns_speaker_service_address + '/99cloud/coredns-speaker/1.0.0/report?token=token1' }}"
 # k8s=/etc/kubernetes/manifests caas(openshift)=/etc/origin/node/pods
-# pod_manifest_path="/home/simon/openshift.local.clusterup/static-pod-manifests"
+# pod_manifest_path="/root/openshift.local.clusterup/static-pod-manifests"
 pod_manifest_path="/etc/origin/node/pods"
 # 不要修改除非你重新制作镜像
 conatiner_config_dir_path="/etc/coredns/"
