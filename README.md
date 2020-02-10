@@ -1,21 +1,21 @@
 # coredns-deployment
 
 - 主要用于在边缘方案中部署整套coredns的产品。
-- 部署中分为二种部署方式: `基于k8s的部署`和*不基于k8s的部署*
-- 我们在生成中推荐使用的部署方式是: *基于k8s的部署*
-- 我们在文档中会阐明如果一些*离线部署*的时候，必须由*部署人员*预先准备好的，我们会给出一些建议
-- 请注意*(offline)*的字样的步骤，只有在offline的情况下才需要去做，有网络的情况下可以忽略
+- 部署中分为二种部署方式: `基于k8s的部署`和`不基于k8s的部署`
+- 我们在生成中推荐使用的部署方式是: `基于k8s的部署`
+- 我们在文档中会阐明如果一些`离线部署`的时候，必须由`部署人员`预先准备好的，我们会给出一些建议
+- 请注意`(offline)`的字样的步骤，只有在offline的情况下才需要去做，有网络的情况下可以忽略
 
 ## 在k8s解决方案的部署(推荐)
 
-1. 在非k8s集群里部署*coredns*、*coredns-speaker(api)*、*消息队列nats(可选)*、*etcd数据库集群*
+1. 在非k8s集群里部署`coredns`、`coredns-speaker(api)`、`消息队列nats(可选)`、`etcd数据库集群`
 
 ## 软件架构
 
 ![test](docs/images/coredns_k8s_base.png)
 
 1. 图中Message Queue Pod的部署是可选的，我们在后面的文档中将提及
-2. 图中*外部Coredns LB*是要另外部署的不在部署脚本中，因为我们并不知道底层的运行环境到底是什么，如果是OpenStack可以用Lbaas，再或者可以自行搭建nginx+keepalive来做负载均衡和Failover
+2. 图中`外部Coredns LB`是要另外部署的不在部署脚本中，因为我们并不知道底层的运行环境到底是什么，如果是OpenStack可以用Lbaas，再或者可以自行搭建nginx+keepalive来做负载均衡和Failover
 
 ## 部署时的架构
 
@@ -47,8 +47,8 @@
 
 ## （offline，非offline可以跳过）准备必要的工具
 
-1. *k8s/caas(openshift)master节点*配置正确的k8s/caas(openshift)集群，通常是预先安装好的
-2. 在你*本机*下载以下镜像并打包为tar文件
+1. `k8s/caas(openshift)master节点`配置正确的k8s/caas(openshift)集群，通常是预先安装好的
+2. 在你`本机`下载以下镜像并打包为tar文件
 
     ```console
     # 以下镜像需要你在有网络的情况下预先准备，然后将打包的tar文件带到离线环境被上传部署
@@ -67,7 +67,7 @@
     $ docker save nats:1.3.0 -o nats.tar
     ```
 
-3. 在你*本机*准备项目文件
+3. 在你`本机`准备项目文件
 
     ```console
     # 目前项目是public的,如果到时候变成了private的了，没有权限可以向容器开发组的小伙伴提出
@@ -79,11 +79,11 @@
     $ chmod +x [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/{cfssl,cfssljson}
     ```
 
-4. *部署节点*需要自行预先安装以下软件，如果必要的话可以自己预先准备安装包或者是`虚拟机的镜像`（当然部署节点可以是你的本机，只要网络通即可）
+4. `部署节点`需要自行预先安装以下软件，如果必要的话可以自己预先准备安装包或者是`虚拟机的镜像`（当然部署节点可以是你的本机，只要网络通即可）
     - ansible
     - curl
 
-5. 在你*本机*准备*cfssl和cfssljson*二进制包
+5. 在你`本机`准备`cfssl和cfssljson`二进制包
 
     ```console
     $ curl -s -L -o [path]/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
@@ -92,7 +92,7 @@
 
 ### 准备工作-部署节点
 
-1. 将部署节点的上的公钥复制到*k8s/caas(openshift)master节点*,在*部署节点*上运行
+1. 将部署节点的上的公钥复制到`k8s/caas(openshift)master节点`,在`部署节点`上运行
 
     ```console
     $ ssh-keygen # 创建密钥对，一路按回车确认
@@ -101,7 +101,7 @@
     $ ssh [k8s/caas(openshift)master节点的ip或域名] # 不需要密码
     ```
 
-2. (offline)从*本机*复制之前准备的*cfssl和cfssljson*二进制包到 */usr/bin/*下
+2. (offline)从`本机`复制之前准备的`cfssl和cfssljson`二进制包到 `/usr/bin/`下
 
     ```console
     $ scp [path]/cfssl [root]@[部署节点]:/usr/bin/
@@ -109,14 +109,14 @@
     $ ssh [root]@[部署节点] chmod +x /usr/bin/{cfssl,cfssljson}
     ```
 
-3. 在*部署节点上*准备repo
-    - 选项1-(offline)从*本机*将预先下载好的Repo复制到*部署节点*上
+3. 在`部署节点上`准备repo
+    - 选项1-(offline)从`本机`将预先下载好的Repo复制到`部署节点`上
 
         ```console
         $ scp -r [path]/mep-deployment/coredns-deployment/ [user]@[部署节点ip或域名]:/root/
         ```
 
-    - 选项2-在*部署节点上*下载repo,或者使用预先下载好的repo
+    - 选项2-在`部署节点上`下载repo,或者使用预先下载好的repo
 
         ```console
         $ yum install git,ansible -y
@@ -134,7 +134,7 @@
     - 选项1-k8s配置storage class请查看[配置storage class](https://kubernetes.io/docs/concepts/storage/storage-classes/)
     - 选项2（推荐）-根据具体的k8s的部署项目的文档来操作
 
-### 准备工作-k8s/caas(openshift)master节点,即*inventory_k8s.example*下的[master1]下对应的节点
+### 准备工作-k8s/caas(openshift)master节点,即`inventory_k8s.example`下的[master1]下对应的节点
 
 1. (可选)如果是在openshift平台上运行请使用命令`oc edit oc edit scc restricted`，并修改 `runAsUser: RunAsAny`
 2. (offline)复制镜像到部署节点上然后你有以下1个选项:
@@ -143,7 +143,7 @@
         ```console
         # 从本机复制镜像到所有的k8s/caas(openshift)的工作节
         # 记得要循环拷贝到每一个节点上，因为k8s/caas(openshift)会调度这些pod到任何工作节点上如果不做特别限制的情况下
-        $ scp *.tar [user]@node:/root/
+        $ scp `.tar [user]@node:/root/
         $ ssh [user]@[k8s/caas(openshift)的工作节ip或者域名] docker load -i /root/coredns-mgrt.tar
         $ ssh [user]@[k8s/caas(openshift)的工作节ip或者域名] docker load -i /root/coredns-edge.tar
         $ ssh [user]@[k8s/caas(openshift)的工作节ip或者域名] docker load -i /root/etcd.tar
@@ -155,9 +155,9 @@
 
 ### 开始部署
 
-1. 在*部署节点上*进入项目目录*mep-deployment/coredns-deployment*
-2. (offline)修改 *[path]/mep-deployment/coredns-deployment/inventory_k8s.example*文件中参数*offline="yes"*
-3. 修改 *[path]/mep-deployment/coredns-deployment/inventory_k8s.example*文件中那些不符合你需求的配置
+1. 在`部署节点上`进入项目目录`mep-deployment/coredns-deployment`
+2. (offline)修改 `[path]/mep-deployment/coredns-deployment/inventory_k8s.example`文件中参数`offline="yes"`
+3. 修改 `[path]/mep-deployment/coredns-deployment/inventory_k8s.example`文件中那些不符合你需求的配置
 
     ```console
     [all:vars]
@@ -258,8 +258,8 @@
 
 4. 运行命令 `ansible-playbook -i inventory_k8s.example deploy_all_with_k8s.yml`，这条命令如果之前部署过的会删掉并重新部署
 5. 以上命令工作流程
-    - 配置master1对于的节点创建必要的目录比如下载或者复制cfssl和cfssljson到指定路径*/usr/bin*
-    - 自动创建*etcd*的集群和负载均衡服务，自动将客户端的证书放入k8s/caas(openshift)的secret中
+    - 配置master1对于的节点创建必要的目录比如下载或者复制cfssl和cfssljson到指定路径`/usr/bin`
+    - 自动创建`etcd`的集群和负载均衡服务，自动将客户端的证书放入k8s/caas(openshift)的secret中
     - (可选)在部署节点本地为消息队列集群的签名证书
     - (可选)安装消息队列集群和消息队列集群的服务
     - 部署coredns管理的api的集群并使用etcd集群和(可选)消息队列和coredns api的负载均衡服务
@@ -268,7 +268,7 @@
 
     |  | member port | protocal |
     | --- | --- | --- |
-    | coredns lb | {{ coredns_service_port }}(根据inventory_k8s.example中的参数*coredns_service_port*，默认53) | UDP |
+    | coredns lb | {{ coredns_service_port }}(根据inventory_k8s.example中的参数`coredns_service_port`，默认53) | UDP |
     | coredns api lb | 80 | TCP |
 
 ### 检验安装
@@ -318,13 +318,13 @@
 
 ## 非k8s解决方案的部署(非推荐)
 
-1. 在非k8s集群里部署*coredns*、*coredns-speaker(api)*、*消息队列nats(可选)*、*etcd数据库集群*
+1. 在非k8s集群里部署`coredns`、`coredns-speaker(api)`、`消息队列nats(可选)`、`etcd数据库集群`
 
 ## 软件架构
 
 ![test](docs/images/coredns_no_k8s_base.png)
 
-1. 图中*外部Coredns LB*是要另外部署的不在部署脚本中，因为我们并不知道底层的运行环境到底是什么，如果是OpenStack可以用Lbaas，再或者可以自行搭建nginx+keepalive来做负载均衡和Failover
+1. 图中`外部Coredns LB`是要另外部署的不在部署脚本中，因为我们并不知道底层的运行环境到底是什么，如果是OpenStack可以用Lbaas，再或者可以自行搭建nginx+keepalive来做负载均衡和Failover
 
 ## 部署时的架构
 
@@ -351,7 +351,7 @@
 ## （offline，非offline可以跳过）准备必要的工具
 
 1. 配置正确至少三台服务器
-2. 在你*本机*准备项目文件
+2. 在你`本机`准备项目文件
 
     ```console
     # 目前项目是public的,如果到时候变成了private的了，没有权限可以向容器开发组的小伙伴提出
@@ -363,7 +363,7 @@
     chmod +x [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/{cfssl,cfssljson}
     ```
 
-3. 在你*本机*下载以下镜像并打包为tar文件
+3. 在你`本机`下载以下镜像并打包为tar文件
 
     ```console
     # 以下镜像需要你在有网络的情况下预先准备，然后将打包的tar文件带到离线环境被上传部署
@@ -371,7 +371,7 @@
     $ docker save 99cloud/coredns-management-api:latest -o coredns-mgrt.tar
     ```
 
-4. 在你*本机*准备*coredns*二进制文件，为了避免编译源码，我们可以从容器镜像中把二进制文件复制出来
+4. 在你`本机`准备`coredns`二进制文件，为了避免编译源码，我们可以从容器镜像中把二进制文件复制出来
 
     ```console
     # 在有网络的环境中运行容器
@@ -385,7 +385,7 @@
     $ cp coredns [path]/mep-deployment/coredns-deployment/coredns-message-no-k8s/binary/
     ```
 
-5. 在你*本机*准备*etcd*二进制文件,直接下载
+5. 在你`本机`准备`etcd`二进制文件,直接下载
 
     ```console
     # 在有网络的环境下载repo
@@ -397,12 +397,12 @@
     $ cp etcd-v3.2.27-linux-amd64/etcdctl [path]/mep-deployment/coredns-deployment/etcd-no-k8s/binary/
     ```
 
-6. 在*部署节点*安装以下软件，如果必要的话可以自己预先准备安装包或者是`虚拟机的镜像`（当然部署节点可以是你的本机，只要网络通即可）
+6. 在`部署节点`安装以下软件，如果必要的话可以自己预先准备安装包或者是`虚拟机的镜像`（当然部署节点可以是你的本机，只要网络通即可）
     - docker
     - ansible
     - curl
 
-7. 在你*本机*准备*cfssl和cfssljson*二进制包
+7. 在你`本机`准备`cfssl和cfssljson`二进制包
 
     ```console
     $ curl -s -L -o [path]/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
@@ -461,8 +461,8 @@
 
 |  | member port | protocal |
 | --- | --- | --- |
-| coredns lb | {{ coredns_service_port }}(根据参数*coredns_service_port*，默认53) | UDP |
-| coredns api lb | {{ coredns_api_port }}(根据参数*coredns_api_port*，默认80) | TCP |
+| coredns lb | {{ coredns_service_port }}(根据参数`coredns_service_port`，默认53) | UDP |
+| coredns api lb | {{ coredns_api_port }}(根据参数`coredns_api_port`，默认80) | TCP |
 
 8. Load balancer的配置:
 
@@ -479,7 +479,7 @@
 
 ### 准备工作-部署节点
 
-1. (可选)在没有dns的环境下部署，我们需要修改被部署的三台主机*节点1、节点2、节点3的 */etc/hosts* 文件
+1. (可选)在没有dns的环境下部署，我们需要修改被部署的三台主机`节点1、节点2、节点3的 `/etc/hosts` 文件
 
     ```console
     # 默认配置
@@ -488,9 +488,9 @@
     10.0.0.30	etcd-node3
     ```
 
-2. 关闭三台部署主机*selinux*,修改*/etc/selinux/config*为*SELINUX=disabled*
+2. 关闭三台部署主机`selinux`,修改`/etc/selinux/config`为`SELINUX=disabled`
 3. 重启这些主机让关闭selinux操作生效
-4. (offline)复制之前准备的*cfssl和cfssljson*二进制包到 */usr/bin/*下
+4. (offline)复制之前准备的`cfssl和cfssljson`二进制包到 `/usr/bin/`下
 
     ```console
     $ scp [path]/cfssl [root]@[部署节点]:/usr/bin/
@@ -498,14 +498,14 @@
     $ scp [root]@[部署节点] chmod +x /usr/bin/{cfssl,cfssljson}
     ```
 
-5. 在*部署节点上*准备repo
-    - 选项1-(offline)将预先下载好的Repo复制到*部署节点*上
+5. 在`部署节点上`准备repo
+    - 选项1-(offline)将预先下载好的Repo复制到`部署节点`上
 
         ```console
         $ scp -r [path]/mep-deployment/coredns-deployment/ [user]@[部署节点ip或域名]:/root/
         ```
 
-    - 选项2-在*部署节点上*下载repo,或者使用预先下载好的repo
+    - 选项2-在`部署节点上`下载repo,或者使用预先下载好的repo
 
         ```console
         $ yum install git,ansible -y
@@ -517,23 +517,23 @@
 ### 准备工作-三台部署的目标节点
 
 1. (offline)复制镜像到部署节点上然后你有以下1个选项:
-    - 选项1-手动加载镜像到*3台部署的目标节点*
+    - 选项1-手动加载镜像到`3台部署的目标节点`
 
         ```console
         # 从本机复制镜像到三台部署的目标节点
-        $ scp *.tar [user]@[部署的目标节点1,2,3]:/root/
+        $ scp `.tar [user]@[部署的目标节点1,2,3]:/root/
         $ ssh [user]@[部署的目标节点1] docker load -i /root/coredns-mgrt.tar
         $ ssh [user]@[部署的目标节点2] docker load -i /root/coredns-mgrt.tar
         $ ssh [user]@[部署的目标节点3] docker load -i /root/coredns-mgrt.tar
         ```
 
-2. 确保三台主机的*53*端口和*80*端口都没被占用
+2. 确保三台主机的`53`端口和`80`端口都没被占用
 
 ### 开始部署
 
-1. 在*部署节点上*进入项目目录*coredns-deployment*
-2. (offline)修改 *[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example*文件中参数*offline="yes"*
-3. 修改 *[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example*文件中那些不符合你需求的配置
+1. 在`部署节点上`进入项目目录`coredns-deployment`
+2. (offline)修改 `[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example`文件中参数`offline="yes"`
+3. 修改 `[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example`文件中那些不符合你需求的配置
 
     ```console
     etcd_node1_ip="10.0.0.28" # 如果修改了[etcd]下的节点的ip，这里也要跟着修改
@@ -584,22 +584,22 @@
     # node1  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
     ```
 
-4. 在*部署节点上*运行命令
+4. 在`部署节点上`运行命令
 
     ```console
     $ ansible-playbook -i inventory_no_k8s.example deploy_all_without_k8s.yml
     ```
 
 5. 以上命令工作流程
-    - 配置master1对于的节点创建必要的目录比如下载或者复制cfssl和cfssljson到指定路径*/usr/bin*
-    - 自动创建*etcd*的集群和负载均衡服务，自动将客户端的证书放入k8s/caas(openshift)的secret中
+    - 配置master1对于的节点创建必要的目录比如下载或者复制cfssl和cfssljson到指定路径`/usr/bin`
+    - 自动创建`etcd`的集群和负载均衡服务，自动将客户端的证书放入k8s/caas(openshift)的secret中
     - 部署coredns管理的api的集群并使用etcd集群和(可选)消息队列和coredns api的负载均衡服务
     - 最后通过静态pod方式部署coredns，并监听coredna api服务
 6. 创建外部的load balancer，参考信息如下
 
     |  | member port | protocal |
     | --- | --- | --- |
-    | coredns lb | {{ coredns_service_port }}(根据inventory_k8s.example中的参数*coredns_service_port*，默认53) | UDP |
+    | coredns lb | {{ coredns_service_port }}(根据inventory_k8s.example中的参数`coredns_service_port`，默认53) | UDP |
     | coredns api lb | 80 | TCP |
 
 ### 检验安装
@@ -658,13 +658,7 @@
 
 ### Trouble shooting
 
-1. 安装中出现*docker pull image timeout*，下载我预先制作好的镜像*99cloud/coredns-management-api*失败了
-
-    > 检查网络是否可以到外网
-
-    > 检查dns域名是否可以解析到docker.io
-
-2. curl的时候出现*deadline exceed错误*，数据库连接超时经常出现的问题，可以做以下检查定位错误
+1. curl的时候出现`deadline exceed错误`，数据库连接超时经常出现的问题，可以做以下检查定位错误
 
     ```console
     # 节点1、2、3中的任意一个节点运行命令
@@ -675,9 +669,9 @@
     # 以上命令会打印debug的日志，就会看到问题输出了
     ```
 
-3. dig的时候没有将我们分流的域名给出正确的应答
+2. dig的时候没有将我们分流的域名给出正确的应答
 
     > 我们使用的coredns的ASK模式，这个模式是定期（10秒）去问coredns api获取最新数据，所以请等待10秒再试一下
 
-    > 如果过了时间还是没有返回正确结果检查容器日志 *docker logs coredns-speaker -f*
+    > 如果过了时间还是没有返回正确结果检查容器日志 `docker logs coredns-speaker -f`
 
