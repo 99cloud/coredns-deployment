@@ -73,10 +73,10 @@
     # 目前项目是public的,如果到时候变成了private的了，没有权限可以向容器开发组的小伙伴提出
     $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
     # 在ansible项目下创建二进制文件目录
-    # mkdir [path]/mep-deployment/coredns-deployment/prepareation/binary
-    $ curl -s -L -o [path]/mep-deployment/coredns-deployment/prepareation/binary/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
-    $ curl -s -L -o [path]/mep-deployment/coredns-deployment/prepareation/binary/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
-    $ chmod +x [path]/mep-deployment/coredns-deployment/prepareation/binary/{cfssl,cfssljson}
+    # mkdir [path]/mep-deployment/coredns-deployment/roles/prepareation/binary
+    $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+    $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+    $ chmod +x [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/{cfssl,cfssljson}
     ```
 
 4. *部署节点*需要自行预先安装以下软件，如果必要的话可以自己预先准备安装包或者是`虚拟机的镜像`（当然部署节点可以是你的本机，只要网络通即可）
@@ -359,10 +359,10 @@
     # 目前项目是public的,如果到时候变成了private的了，没有权限可以向容器开发组的小伙伴提出
     $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
     # 在ansible项目下创建二进制文件目录
-    # mkdir [path]/mep-deployment/coredns-deployment/prepareation/binary
-    $ curl -s -L -o [path]/mep-deployment/coredns-deployment/prepareation/binary/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
-    $ curl -s -L -o [path]/mep-deployment/coredns-deployment/prepareation/binary/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
-    chmod +x [path]/mep-deployment/coredns-deployment/prepareation/binary/{cfssl,cfssljson}
+    # mkdir [path]/mep-deployment/coredns-deployment/roles/prepareation/binary
+    $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+    $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+    chmod +x [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/{cfssl,cfssljson}
     ```
 
 3. 在你*本机*下载以下镜像并打包为tar文件
