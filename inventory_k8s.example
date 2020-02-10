@@ -2,6 +2,9 @@
 # <basic section starts>
 project_template_path="/etc/coredns-edge-deployment"
 go_path="/root/go"
+# 当时用caas(openshift)的时候oc_binary="/usr/bin/oc"
+# 当使用k8s的时候oc_binary="/usr/bin/kubectl"
+# oc_binary="/usr/bin/oc"
 oc_binary="/usr/bin/kubectl"
 namespace_coredns_edge="coredns-edge"
 caas_cluster_domain="cluster.local"
