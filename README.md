@@ -123,7 +123,8 @@
         $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
         ```
     
-4. 请确保kubectl或者oc命令行工具已经正确配置为管理身份,通常k8s的情况下不需要做任何修改，当你使用caas(openshift)的情况下，运行命令:
+4. 请确保`k8s/caas(openshift)master节点`上的kubectl或者oc命令行工具已经正确配置为管理身份,通常k8s的情况下不需要做任何修改，
+    - (可选)当你使用caas(openshift)的情况下，运行命令:
 
     ```console
     # 在inventory_k8s.example文件中[master1]下面的机器上运行命令
