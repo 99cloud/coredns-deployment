@@ -122,8 +122,11 @@
         $ yum install git,ansible -y
         $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
         ```
-    
-4. 请确保`k8s/caas(openshift)master节点`上的kubectl或者oc命令行工具已经正确配置为管理身份,通常k8s的情况下不需要做任何修改，
+
+### 准备工作-k8s/caas(openshift)master节点,即`inventory_k8s.example`下的[master1]下对应的节点
+
+1. (可选)如果是在openshift平台上运行请使用命令`oc edit oc edit scc restricted`，并修改 `runAsUser: RunAsAny`
+2. 请确保`k8s/caas(openshift)master节点`上的kubectl或者oc命令行工具已经正确配置为管理身份,通常k8s的情况下不需要做任何修改，
     - (可选)当你使用caas(openshift)的情况下，运行命令:
 
     ```console
@@ -131,14 +134,11 @@
     $ oc login -u system:admin
     ```
 
-5. 准备k8s/caas(openshift)的块存储，在k8s搭建完成后没有持久化的存储配置，需要我们手动的去配置，caas(openshift)的话一般都会默认接好一种存储的storage class比如cinder、ceph、glusterfs等等
+3. 准备k8s/caas(openshift)的块存储，在k8s搭建完成后没有持久化的存储配置，需要我们手动的去配置，`当使用caas(openshift)的话一般都会默认接好一种存储的storage class`比如cinder、ceph、glusterfs等等
     - 选项1-k8s配置storage class请查看[配置storage class](https://kubernetes.io/docs/concepts/storage/storage-classes/)
     - 选项2（推荐）-根据具体的k8s的部署项目的文档来操作
 
-### 准备工作-k8s/caas(openshift)master节点,即`inventory_k8s.example`下的[master1]下对应的节点
-
-1. (可选)如果是在openshift平台上运行请使用命令`oc edit oc edit scc restricted`，并修改 `runAsUser: RunAsAny`
-2. (offline)复制镜像到部署节点上然后你有以下1个选项:
+4. (offline)复制镜像到部署节点上然后你有以下1个选项:
     - 选项1-手动加载镜像到每一个k8s/caas(openshift)的工作节
 
         ```console
