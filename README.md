@@ -110,7 +110,7 @@
     ```
 
 3. 在*部署节点上*准备repo
-    - 选项1-(offline)将预先下载好的Repo复制到*部署节点*上
+    - 选项1-(offline)从*本机*将预先下载好的Repo复制到*部署节点*上
 
         ```console
         $ scp -r [path]/mep-deployment/coredns-deployment/ [user]@[部署节点ip或域名]:/root/
