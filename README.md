@@ -80,7 +80,6 @@
     ```
 
 4. *部署节点*需要自行预先安装以下软件，如果必要的话可以自己预先准备安装包或者是`虚拟机的镜像`（当然部署节点可以是你的本机，只要网络通即可）
-    - docker
     - ansible
     - curl
 
@@ -102,8 +101,7 @@
     $ ssh [k8s/caas(openshift)master节点的ip或域名] # 不需要密码
     ```
 
-2. (offline)如果是offline的环境，请将你的预先下载的项目*mep-deployment*目录复制到部署节点上
-3. (offline)复制之前准备的*cfssl和cfssljson*二进制包到 */usr/bin/*下
+2. (offline)从*本机*复制之前准备的*cfssl和cfssljson*二进制包到 */usr/bin/*下
 
     ```console
     $ scp [path]/cfssl [root]@[部署节点]:/usr/bin/
@@ -111,7 +109,7 @@
     $ scp [root]@[部署节点] chmod +x /usr/bin/{cfssl,cfssljson}
     ```
 
-4. 在*部署节点上*准备repo
+3. 在*部署节点上*准备repo
     - 选项1-(offline)将预先下载好的Repo复制到*部署节点*上
 
         ```console
@@ -125,14 +123,14 @@
         $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
         ```
     
-5. 请确保kubectl或者oc命令行工具已经正确配置为管理身份,通常k8s的情况下不需要做任何修改，当你使用caas(openshift)的情况下，运行命令:
+4. 请确保kubectl或者oc命令行工具已经正确配置为管理身份,通常k8s的情况下不需要做任何修改，当你使用caas(openshift)的情况下，运行命令:
 
     ```console
     # 在inventory_k8s.example文件中[master1]下面的机器上运行命令
     $ oc login -u system:admin
     ```
 
-6. 准备k8s/caas(openshift)的块存储，在k8s搭建完成后没有持久化的存储配置，需要我们手动的去配置，caas(openshift)的话一般都会默认接好一种存储的storage class比如cinder、ceph、glusterfs等等
+5. 准备k8s/caas(openshift)的块存储，在k8s搭建完成后没有持久化的存储配置，需要我们手动的去配置，caas(openshift)的话一般都会默认接好一种存储的storage class比如cinder、ceph、glusterfs等等
     - 选项1-k8s配置storage class请查看[配置storage class](https://kubernetes.io/docs/concepts/storage/storage-classes/)
     - 选项2（推荐）-根据具体的k8s的部署项目的文档来操作
 
