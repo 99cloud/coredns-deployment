@@ -130,14 +130,13 @@
     - (可选)当你使用caas(openshift)的情况下，运行命令:
 
     ```console
-    # 修改`[path]/mep-deployment/coredns-deployment/roles/etcd-operator/templates/etcd-cluster.yml.j2`
     $ oc login -u system:admin
     ```
 
 3. 准备k8s/caas(openshift)的块存储，在k8s搭建完成后没有持久化的存储配置，需要我们手动的去配置，`当使用caas(openshift)的话一般都会默认接好一种存储的storage class`比如cinder、ceph、glusterfs等等
     - 选项1-k8s配置storage class请查看[配置storage class](https://kubernetes.io/docs/concepts/storage/storage-classes/)
     - 选项2（推荐）-根据具体的k8s的部署项目的文档来操作
-    - 选项3 (测试环境非生产)-使用主机的磁盘
+    - 选项3 (测试环境非生产)-使用主机的磁盘，在`部署节点上`修改`[path]/mep-deployment/coredns-deployment/roles/etcd-operator/templates/etcd-cluster.yml.j2`
 
         ```console
         # 在inventory_k8s.example文件中[master1]下面的机器上运行命令
