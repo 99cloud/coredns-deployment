@@ -20,22 +20,23 @@
     message_queue_auth_mode: "none"
   when: nats_use_tls != "yes"
 
-- name: "Waits for etcd service {{ etcd_peer_svc_name }}-client.{{ namespace_coredns_edge }}.svc:2379 to start for 120 secs"
+- name: "Waits for etcd service {{ etcd_peer_svc_name }}-client.{{ namespace_coredns_edge }}.svc:2379 to start for 240 secs"
   wait_for:
-    timeout: 120
+    timeout: 240
     host: "{{ etcd_peer_svc_name }}-client.{{ namespace_coredns_edge }}.svc"
     port: 2379
     delay: 10
     state: drained
+  when: deploy_node_is_master == "yes"
 
-- name: "Waits for nats service {{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc:4222 to start for 120 secs"
+- name: "Waits for nats service {{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc:4222 to start for 240 secs"
   wait_for:
-    timeout: 120
+    timeout: 240
     host: "{{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc"
     port: 4222
     delay: 10
     state: drained
-  when: coredns_speaker_mode == "initiative"
+  when: coredns_speaker_mode == "initiative" and deploy_node_is_master == "yes"
 
 - name: Copy config template to target
   template: 

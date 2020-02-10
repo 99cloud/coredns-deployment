@@ -21,7 +21,7 @@ spec:
         secret:
           secretName: etcd-client-tls
 {% endif %}
-{% if message_queue_auth_mode == "tls" %}
+{% if message_queue_auth_mode == "tls" and coredns_speaker_mode == "initiative" %}
       - name: nats-tls
         secret:
           secretName: nats-client-connection-tls
@@ -38,7 +38,7 @@ spec:
           mountPath: "{{ project_template_path }}/etcd/"
           readOnly: true
 {% endif %}
-{% if message_queue_auth_mode == "tls" %}
+{% if message_queue_auth_mode == "tls" and coredns_speaker_mode == "initiative" %}
         - name: nats-tls
           mountPath: "{{ project_template_path }}/nats/"
           readOnly: true

@@ -184,6 +184,7 @@
     # 当选择passive模式的话，将跳过nats消息队列的部署
     coredns_speaker_mode="passive" # 使用passive就ok了
     offline="no" # 如果是离线安装请设置为offline="yes"
+    deploy_node_is_master="no" # 当你的部署节点是k8s/caas(openshift)
     # </basic section ends>
 
     # <tls sign section starts>
