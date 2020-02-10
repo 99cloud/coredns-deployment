@@ -6,7 +6,7 @@ oc_binary="/usr/bin/kubectl"
 namespace_coredns_edge="coredns-edge"
 caas_cluster_domain="cluster.local"
 #coredns_speaker_mode="initiative"
-#coredns_speaker_mode="passive"
+coredns_speaker_mode="passive"
 offline="no"
 deploy_node_is_master="no"
 # </basic section ends>
@@ -35,7 +35,7 @@ etcd_password=password
 # </etcd operator section ends>
 
 # <nats section starts>
-nats_use_tls="no"
+nats_use_tls="yes"
 nats_cluster_name="nats-cluster"
 message_queue_subject="msg.edge.coredns"
 message_queue_username="username"
