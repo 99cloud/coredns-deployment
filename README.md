@@ -125,7 +125,7 @@
 
 ### 准备工作-k8s/caas(openshift)master节点,即`inventory_k8s.example`下的[master1]下对应的节点
 
-1. (可选)如果是在openshift平台上运行请使用命令`oc edit oc edit scc restricted`，并修改 `runAsUser: RunAsAny`
+1. (可选)如果是在openshift平台上运行请使用命令`oc edit scc restricted`，并修改 `runAsUser: RunAsAny`
 2. 请确保`k8s/caas(openshift)master节点`上的kubectl或者oc命令行工具已经正确配置为管理身份,通常k8s的情况下不需要做任何修改，
     - (可选)当你使用caas(openshift)的情况下，运行命令:
 
