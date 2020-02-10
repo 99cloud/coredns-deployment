@@ -176,6 +176,8 @@
     ```console
     [all:vars]
     # <basic section starts>
+    # 当时用caas(openshift)的时候oc_binary="/usr/bin/oc"
+    # 当使用k8s的时候oc_binary="/usr/bin/kubectl"
     oc_binary="/usr/bin/kubectl" # 默认不用改
     namespace_coredns_edge="coredns-edge" # 默认不用改
     caas_cluster_domain="cluster.local" # 默认不用改
@@ -239,13 +241,15 @@
     # 如果设置coredns_speaker_mode="initiative"请忽略
     ask_frequency=10 # 默认就好
     # 静态pod的目录地址
-    # k8s=/etc/kubernetes/manifests caas(openshift)=/etc/origin/node/pods
+    # 如果是pod_manifest_path=/etc/kubernetes/manifests caas(openshift)=/etc/origin/node/pods
+    # 如果是caas(openshift)pod_manifest_path="/etc/origin/node/pods"
+    # 如果是oc cluster up(测试) pod_manifest_path="[path]/openshift.local.clusterup/static-pod-manifests"
     pod_manifest_path="/etc/origin/node/pods"
     # 不要修改除非你重新制作镜像
     conatiner_config_dir_path="/etc/coredns/" # 默认就好
     # ClusterIP | NodePort | LoadBalancer | ExternalName
     # coredns_svc_type="ClusterIP"
-    coredns_svc_type="NodePort" # 默认就好
+    coredns_svc_type="NodePort" # 改成NodePort
     # </coredns message plugin section ends>
 
     # k8s 任何一个master节点
@@ -270,7 +274,7 @@
     localhost              ansible_connection=local  # 默认就好                     
     ```
 
-4. 运行命令 `ansible-playbook -i inventory_k8s.example deploy_all_with_k8s.yml`，这条命令如果之前部署过的会删掉并重新部署
+4. 运行命令 `cd [path]/mep-deployment/coredns-deployment/ && ansible-playbook -i inventory_k8s.example deploy_all_with_k8s.yml`，这条命令如果之前部署过的会删掉并重新部署
 5. 以上命令工作流程
     - 配置master1对于的节点创建必要的目录比如下载或者复制cfssl和cfssljson到指定路径`/usr/bin`
     - 自动创建`etcd`的集群和负载均衡服务，自动将客户端的证书放入k8s/caas(openshift)的secret中
