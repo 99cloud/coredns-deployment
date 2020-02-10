@@ -299,12 +299,12 @@
     $ kubectl get pods -n coredns-edge -o wide
     # 检查节点1
     # 命令应该返回结果 { "mgs": "OK" }
-    $ curl -X PUT http://[coredns api容器的ip]/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 /
+    $ curl -X PUT http://[coredns api容器的ip]/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 \
     -d "{\"id\":\"123124\",\"action\":\"create\",\"domain\":\"www.ccc.com\",\"answers\":[{\"domain\":\"www.ccc.com\",\"type\":\"A\",\"ip\":\"12.12.12.12\"}]}"
 
     # 测试 coredns 的 load balancer
     # 命令应该返回结果 { "mgs": "OK" }
-    $ curl -X PUT http://coredns-speaker-svc.coredns-edge.svc/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 /
+    $ curl -X PUT http://coredns-speaker-svc.coredns-edge.svc/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 \
     -d "{\"id\":\"123124\",\"action\":\"create\",\"domain\":\"www.ccc.com\",\"answers\":[{\"domain\":\"www.ccc.com\",\"type\":\"A\",\"ip\":\"12.12.12.12\"}]}"
 
 2. 检验coredns运行正常
@@ -628,7 +628,7 @@
     ```console
     # 检查节点1
     # 命令应该返回结果 { "mgs": "OK" }
-    $ curl -X PUT http://etcd-node1/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 /
+    $ curl -X PUT http://etcd-node1/99cloud/coredns-speaker/1.0.0/hijack\?token\=token1 \
     -d "{\"id\":\"123124\",\"action\":\"create\",\"domain\":\"www.ccc.com\",\"answers\":[{\"domain\":\"www.ccc.com\",\"type\":\"A\",\"ip\":\"12.12.12.12\"}]}"
 
     # 检查节点2

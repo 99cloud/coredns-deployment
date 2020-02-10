@@ -4,7 +4,11 @@ DATABASE_AUTH_MODE={{ database_auth_mode }}
 DATABASE_CA_FILE_PATH={{ project_template_path }}/etcd/etcd-client-ca.crt
 DATABASE_KEY_FILE_PATH={{ project_template_path }}/etcd/etcd-client.key
 DATABASE_CERT_FILE_PATH={{ project_template_path }}/etcd/etcd-client.crt
+{% if coredns_speaker_mode == "initiative" %}
 MESSAGE_QUEUE_AUTH_MODE={{ message_queue_auth_mode }}
+{% else %}
+MESSAGE_QUEUE_AUTH_MODE="none"
+{% endif %}
 SPEAKER_MODE={{ coredns_speaker_mode }}
 AUTH_MODE={{ api_auth_mode }}
 MESSAGE_QUEUE_ENDPOINT={{ nats_cluster_name }}.{{ namespace_coredns_edge }}.svc:4222
