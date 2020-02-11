@@ -2,7 +2,7 @@
 
 - 主要用于在边缘方案中部署整套coredns的产品。
 - 部署中分为二种部署方式: `基于k8s的部署`和`不基于k8s的部署`
-- 我们在生成中推荐使用的部署方式是: `基于k8s的部署`
+- 我们在生成中推荐使用的部署方式是: `基于k8s/caas(openshift)的部署，因为在非k8s/caas(openshift)部署中需要手动部署load balance`
 - 我们在文档中会阐明如果一些`离线部署`的时候，必须由`部署人员`预先准备好的，我们会给出一些建议
 - 请注意`(offline)`的字样的步骤，只有在offline的情况下才需要去做，有网络的情况下可以忽略
 
@@ -345,6 +345,11 @@
 ![test](docs/images/coredns_no_k8s_base.png)
 
 1. 图中`外部Coredns LB`是要另外部署的不在部署脚本中，因为我们并不知道底层的运行环境到底是什么，如果是OpenStack可以用Lbaas，再或者可以自行搭建nginx+keepalive来做负载均衡和Failover
+2. 为了满足高可用的需求，我们这里至少需要`3个节点`
+3. 在文档中会使用一下设置
+    - 节点1-ip:`10.0.0.28` hostname:`etcd-node1`
+    - 节点2-ip:`10.0.0.29` hostname:`etcd-node2`
+    - 节点3-ip:`10.0.0.30` hostname:`etcd-node3`
 
 ## 部署时的架构
 
@@ -380,7 +385,7 @@
     # mkdir [path]/mep-deployment/coredns-deployment/roles/prepareation/binary
     $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
     $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
-    chmod +x [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/{cfssl,cfssljson}
+    $ chmod +x [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/{cfssl,cfssljson}
     ```
 
 3. 在你`本机`下载以下镜像并打包为tar文件
@@ -400,9 +405,9 @@
     $ docker cp coredns:/bin/coredns .
     # 删除容器
     $ dockr rm -f coredns
-    # 将二进制文件coredns复制到目录mep-deployment/coredns-deployment/coredns-message-no-k8s/binary/
-    $ mkdir [path]/mep-deployment/coredns-deployment/coredns-message-no-k8s/binary
-    $ cp coredns [path]/mep-deployment/coredns-deployment/coredns-message-no-k8s/binary/
+    # 将二进制文件coredns复制到目录mep-deployment/coredns-deployment/roles/coredns-message-no-k8s/binary/
+    $ mkdir [path]/mep-deployment/coredns-deployment/roles/coredns-message-no-k8s/binary
+    $ cp coredns [path]/mep-deployment/coredns-deployment/roles/coredns-message-no-k8s/binary/
     ```
 
 5. 在你`本机`准备`etcd`二进制文件,直接下载
@@ -411,20 +416,20 @@
     # 在有网络的环境下载repo
     $ wget https://github.com/etcd-io/etcd/releases/download/v3.2.27/etcd-v3.2.27-linux-amd64.tar.gz
     $ tar -zxvf etcd-v3.2.27-linux-amd64.tar.gz
-    $ mkdir [path]/mep-deployment/coredns-deployment/etcd-no-k8s/binary
-    # copy etcd and etcdctl to mep-deployment/coredns-deployment/etcd-no-k8s/binary/
-    $ cp etcd-v3.2.27-linux-amd64/etcd [path]/mep-deployment/coredns-deployment/etcd-no-k8s/binary/
-    $ cp etcd-v3.2.27-linux-amd64/etcdctl [path]/mep-deployment/coredns-deployment/etcd-no-k8s/binary/
+    $ mkdir [path]/mep-deployment/coredns-deployment/roles/etcd-no-k8s/binary
+    # copy etcd and etcdctl to mep-deployment/coredns-deployment/roles/etcd-no-k8s/binary/
+    $ cp etcd-v3.2.27-linux-amd64/etcd [path]/mep-deployment/coredns-deployment/roles/etcd-no-k8s/binary/
+    $ cp etcd-v3.2.27-linux-amd64/etcdctl [path]/mep-deployment/coredns-deployment/roles/etcd-no-k8s/binary/
     ```
 
 6. 在`部署节点`安装以下软件，如果必要的话可以自己预先准备安装包或者是`虚拟机的镜像`（当然部署节点可以是你的本机，只要网络通即可）
-    - docker
     - ansible
     - curl
 
 7. 在你`本机`准备`cfssl和cfssljson`二进制包
 
     ```console
+    # 你之前已经下载过了，可以直接cp到你的离线文件里，如果网络给里直接下载
     $ curl -s -L -o [path]/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
     $ curl -s -L -o [path]/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
     ```
@@ -508,9 +513,7 @@
     10.0.0.30	etcd-node3
     ```
 
-2. 关闭三台部署主机`selinux`,修改`/etc/selinux/config`为`SELINUX=disabled`
-3. 重启这些主机让关闭selinux操作生效
-4. (offline)复制之前准备的`cfssl和cfssljson`二进制包到 `/usr/bin/`下
+2. (offline)从`本机`复制之前准备的`cfssl和cfssljson`二进制包到 `/usr/bin/`下
 
     ```console
     $ scp [path]/cfssl [root]@[部署节点]:/usr/bin/
@@ -518,8 +521,8 @@
     $ scp [root]@[部署节点] chmod +x /usr/bin/{cfssl,cfssljson}
     ```
 
-5. 在`部署节点上`准备repo
-    - 选项1-(offline)将预先下载好的Repo复制到`部署节点`上
+3. 在`部署节点上`准备repo
+    - 选项1-(offline)从你`本机`将预先下载好的Repo复制到`部署节点`上
 
         ```console
         $ scp -r [path]/mep-deployment/coredns-deployment/ [user]@[部署节点ip或域名]:/root/
@@ -534,28 +537,43 @@
 
 
 
-### 准备工作-三台部署的目标节点
+### 准备工作-三台部署的目标节点(节点1，节点2,节点3)
 
-1. (offline)复制镜像到部署节点上然后你有以下1个选项:
+1. 关闭三台部署的`目标主机(节点1，节点2,节点3)`的`selinux`,修改`/etc/selinux/config`为`SELINUX=disabled`
+2. 重启这些主机让关闭selinux操作生效
+3. (offline)准备安装docker，你有2个选项
+    - 选项1-在线安装docker，在3个节点上运行
+
+        ```console
+        $ yum install epel-release -y
+        $ yum install docker -y
+        $ yum enable docker
+        $ yum start docker
+        ```
+
+    - 选项1-(offline)可以通过安装虚拟机镜像(推荐)的方式准备镜像或者RPM安装包
+
+2. (offline)从`本机`复制镜像到`部署目标节点上(节点1，节点2,节点3)`然后你有以下1个选项:
     - 选项1-手动加载镜像到`3台部署的目标节点`
 
         ```console
         # 从本机复制镜像到三台部署的目标节点
-        $ scp `.tar [user]@[部署的目标节点1,2,3]:/root/
+        $ scp coredns-mgrt.tar [user]@[部署的目标节点1,2,3]:/root/
         $ ssh [user]@[部署的目标节点1] docker load -i /root/coredns-mgrt.tar
         $ ssh [user]@[部署的目标节点2] docker load -i /root/coredns-mgrt.tar
         $ ssh [user]@[部署的目标节点3] docker load -i /root/coredns-mgrt.tar
         ```
 
-2. 确保三台主机的`53`端口和`80`端口都没被占用
+3. 确保三台主机的`53`端口和`80`端口都没被占用
 
 ### 开始部署
 
-1. 在`部署节点上`进入项目目录`coredns-deployment`
+1. 在`部署节点上`进入项目目录`[path]/mep-deployment/coredns-deployment`
 2. (offline)修改 `[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example`文件中参数`offline="yes"`
 3. 修改 `[path]/mep-deployment/coredns-deployment/inventory_no_k8s.example`文件中那些不符合你需求的配置
 
     ```console
+    offline="no" # 如果是离线安装请设置为offline="yes"
     etcd_node1_ip="10.0.0.28" # 如果修改了[etcd]下的节点的ip，这里也要跟着修改
     etcd_node2_ip="10.0.0.29" # 如果修改了[etcd]下的节点的ip，这里也要跟着修改
     etcd_node3_ip="10.0.0.30" # 如果修改了[etcd]下的节点的ip，这里也要跟着修改
@@ -565,7 +583,7 @@
     # 比如coredns api lb的地址为172.16.100.100:8080
     # coredns_speaker_service_address="172.16.100.100:8080"
     # 这里为了方便我只写了其中的一个节点的地址
-    coredns_speaker_service_address="10.0.0.28" # 等lb部署完了改成lb的ip+端口
+    coredns_speaker_service_address="10.0.0.28" # 等lb部署完了改成lb的ip+端口,我们会在后面提到，后期怎么修改这个地址
     coredns_api_port=80 #coredns api提供服务的端口
     
     # 不要改，逻辑是在本地先签名证书，所以你运行ansible的时候可以是在一个部署节点上
@@ -589,16 +607,16 @@
     #localhost              ansible_connection=local
     # 172.16.60.17  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
     
-    # 可以和etcd部署在一起，也分开部署
+    # 可以和etcd部署在一起也可以分开部署,文档中都部署在一起
     [coredns_api]
-    etcd-node1 # 可以不用改
+    etcd-node1
     etcd-node2
     etcd-node3
     # node1  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
     
-    # 可以和etcd部署在一起，也分开部署
+    # 可以和etcd部署在一起也可以分开部署,文档中都部署在一起
     [coredns]
-    etcd-node1 # 可以不用改
+    etcd-node1
     etcd-node2
     etcd-node3
     # node1  ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa_rhel
@@ -612,8 +630,8 @@
 
 5. 以上命令工作流程
     - 配置master1对于的节点创建必要的目录比如下载或者复制cfssl和cfssljson到指定路径`/usr/bin`
-    - 自动创建`etcd`的集群和负载均衡服务，自动将客户端的证书放入k8s/caas(openshift)的secret中
-    - 部署coredns管理的api的集群并使用etcd集群和(可选)消息队列和coredns api的负载均衡服务
+    - 自动创建`etcd`的集群，自动将客户端的证书放入k8s/caas(openshift)的secret中
+    - 部署coredns管理的api的集群并使用etcd集群,`注意这里etcd没有lb，不用觉得奇怪，是因为etcd客户端代码里自己实现了负载均衡，我们直接在配置文件里写了3个etcd集群的节点的ip即可，无需负载均衡`。
     - 最后通过静态pod方式部署coredns，并监听coredna api服务
 6. 创建外部的load balancer，参考信息如下
 
@@ -621,6 +639,12 @@
     | --- | --- | --- |
     | coredns lb | {{ coredns_service_port }}(根据inventory_k8s.example中的参数`coredns_service_port`，默认53) | UDP |
     | coredns api lb | 80 | TCP |
+
+6. 修改coredns静态配置文件，来使用coredns管理api的负载均衡地址，而不是之前的一个节点的地址
+    - 登陆到`部署目标节点上(节点1，节点2,节点3)`
+    - 修改`/etc/coredns-edge-deployment/coredns/config.yaml`
+    - 将配置文件中的`initial-data-provider-service-url`的ip换成部署配置完成的coredns api load balancer的ip或者域名
+    - 重启coredns服务`systemctl restat coredns`
 
 ### 检验安装
 

@@ -62,7 +62,7 @@ coredns_upstream_address=114.114.114.114
 coredns_speaker_service_address="{{ 'coredns-speaker-svc.' + namespace_coredns_edge + '.svc' }}"
 # 注意token必须是上面"allowed_token"中的一个
 initial_data_provider_service_url="{{ coredns_speaker_service_address + '/99cloud/coredns-speaker/1.0.0/hijack-list?token=token1' }}"
-# 建议不小10秒
+# 建议不小10秒，有http request句柄关闭问题，当goroutine的运行时间小于request time out，会造成request body没有正确关闭，造成http request异常"too many open file"
 ask_frequency=10
 enable_report="false"
 report_frequency=10
