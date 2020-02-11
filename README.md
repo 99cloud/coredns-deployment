@@ -516,7 +516,7 @@
     $ ssh [k8s/caas(openshift)master节点的ip或域名] # 不需要密码
     ```
 
-1. (可选)在没有dns的环境下部署，我们需要修改`/etc/hosts`文件
+2. (可选)在没有dns的环境下部署，我们需要修改`/etc/hosts`文件
 
     ```console
     # 默认配置
@@ -525,7 +525,7 @@
     10.0.0.30	etcd-node3
     ```
 
-2. (offline)从`本机`复制之前准备的`cfssl和cfssljson`二进制包到 `/usr/bin/`下
+3. (offline)从`本机`复制之前准备的`cfssl和cfssljson`二进制包到 `/usr/bin/`下
 
     ```console
     $ scp [path]/cfssl [root]@[部署节点]:/usr/bin/
@@ -533,7 +533,7 @@
     $ scp [root]@[部署节点] chmod +x /usr/bin/{cfssl,cfssljson}
     ```
 
-3. 在`部署节点上`准备repo
+4. 在`部署节点上`准备repo
     - 选项1-(offline)从你`本机`将预先下载好的Repo复制到`部署节点`上
 
         ```console
@@ -585,7 +585,9 @@
         $ ssh [user]@[部署的目标节点3] docker load -i /root/coredns-mgrt.tar
         ```
 
-6. 确保三台主机的`53`端口和`80`端口都没被占用
+6. (可选)安装NTP，如果3台ETCD的时间差大于1秒钟的话，会出现
+
+7. 确保三台主机的`53`端口和`80`端口都没被占用
 
 ### 开始部署
 
@@ -667,7 +669,7 @@
     | coredns lb | {{ coredns_service_port }}(根据inventory_k8s.example中的参数`coredns_service_port`，默认53) | UDP |
     | coredns api lb | 80 | TCP |
 
-6. 修改coredns静态配置文件，来使用coredns管理api的负载均衡地址，而不是之前的一个节点的地址
+7. 修改coredns静态配置文件，来使用coredns管理api的负载均衡地址，而不是之前的一个节点的地址
     - 登陆到`部署目标节点上(节点1，节点2,节点3)`
     - 修改`/etc/coredns-edge-deployment/coredns/config.yaml`
     - 将配置文件中的`initial-data-provider-service-url`的ip换成部署配置完成的coredns api load balancer的ip或者域名
