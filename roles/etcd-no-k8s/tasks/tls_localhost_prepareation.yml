@@ -24,12 +24,28 @@
     url: https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
     dest: /usr/bin/cfssl
     mode: '0711'
+  when: offline != "yes"
 
 - name: Download cfssljson tool
   get_url:
     url: https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
     dest: /usr/bin/cfssljson
     mode: '0711'
+  when: offline != "yes"
+
+- name: Copy cfssl binary to target
+  copy: 
+    src: "{{ role_path }}/binary/cfssl"
+    dest: "/usr/bin/cfssl"
+    mode: 0755
+  when: offline == "yes"
+
+- name: Copy cfssljson binary to target
+  copy: 
+    src: "{{ role_path }}/binary/cfssljson"
+    dest: "/usr/bin/cfssljson"
+    mode: 0755
+  when: offline == "yes"
 
 - name: Create root cert
   shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca -"

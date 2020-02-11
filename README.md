@@ -73,7 +73,7 @@
     # 目前项目是public的,如果到时候变成了private的了，没有权限可以向容器开发组的小伙伴提出
     $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
     # 在ansible项目下创建二进制文件目录
-    # mkdir [path]/mep-deployment/coredns-deployment/roles/prepareation/binary
+    $ mkdir [path]/mep-deployment/coredns-deployment/roles/prepareation/binary
     $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
     $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
     $ chmod +x [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/{cfssl,cfssljson}
@@ -382,10 +382,13 @@
     # 目前项目是public的,如果到时候变成了private的了，没有权限可以向容器开发组的小伙伴提出
     $ git clone http://gitlab.sh.99cloud.net/mep/mep-deployment.git
     # 在ansible项目下创建二进制文件目录
-    # mkdir [path]/mep-deployment/coredns-deployment/roles/prepareation/binary
+    $ mkdir [path]/mep-deployment/coredns-deployment/roles/prepareation/binary
     $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
     $ curl -s -L -o [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
     $ chmod +x [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/{cfssl,cfssljson}
+    $ mkdir [path]/mep-deployment/coredns-deployment/roles/etcd-no-k8s/binary
+    $ cp [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssl [path]/mep-deployment/coredns-deployment/roles/etcd-no-k8s/binary/
+    $ cp [path]/mep-deployment/coredns-deployment/roles/prepareation/binary/cfssljson [path]/mep-deployment/coredns-deployment/roles/etcd-no-k8s/binary/
     ```
 
 3. 在你`本机`下载以下镜像并打包为tar文件
@@ -504,7 +507,16 @@
 
 ### 准备工作-部署节点
 
-1. (可选)在没有dns的环境下部署，我们需要修改被部署的三台主机`节点1、节点2、节点3的 `/etc/hosts` 文件
+1. 将部署节点的上的公钥复制到`部署目标的三台主机节点1、节点2、节点3的`,在`部署节点`上运行
+
+    ```console
+    $ ssh-keygen # 创建密钥对，一路按回车确认
+    $ ssh-copy-id root@[k8s/caas(openshift)master节点的ip或域名] # 复制公钥到k8s/caas(openshift)master节点
+    # 尝试链接
+    $ ssh [k8s/caas(openshift)master节点的ip或域名] # 不需要密码
+    ```
+
+1. (可选)在没有dns的环境下部署，我们需要修改`/etc/hosts`文件
 
     ```console
     # 默认配置
@@ -539,9 +551,18 @@
 
 ### 准备工作-三台部署的目标节点(节点1，节点2,节点3)
 
-1. 关闭三台部署的`目标主机(节点1，节点2,节点3)`的`selinux`,修改`/etc/selinux/config`为`SELINUX=disabled`
-2. 重启这些主机让关闭selinux操作生效
-3. (offline)准备安装docker，你有2个选项
+1. (可选)在没有dns的环境下部署，我们需要修改`部署目标的三台主机节点1、节点2、节点3的 `/etc/hosts` 文件
+
+    ```console
+    # 默认配置
+    10.0.0.28	etcd-node1
+    10.0.0.29	etcd-node2
+    10.0.0.30	etcd-node3
+    ```
+
+2. 关闭三台部署的`目标主机(节点1，节点2,节点3)`的`selinux`,修改`/etc/selinux/config`为`SELINUX=disabled`
+3. 重启这些主机让关闭selinux操作生效
+4. (offline)准备安装docker，你有2个选项
     - 选项1-在线安装docker，在3个节点上运行
 
         ```console
@@ -553,7 +574,7 @@
 
     - 选项1-(offline)可以通过安装虚拟机镜像(推荐)的方式准备镜像或者RPM安装包
 
-2. (offline)从`本机`复制镜像到`部署目标节点上(节点1，节点2,节点3)`然后你有以下1个选项:
+5. (offline)从`本机`复制镜像到`部署目标节点上(节点1，节点2,节点3)`然后你有以下1个选项:
     - 选项1-手动加载镜像到`3台部署的目标节点`
 
         ```console
@@ -564,7 +585,7 @@
         $ ssh [user]@[部署的目标节点3] docker load -i /root/coredns-mgrt.tar
         ```
 
-3. 确保三台主机的`53`端口和`80`端口都没被占用
+6. 确保三台主机的`53`端口和`80`端口都没被占用
 
 ### 开始部署
 
@@ -585,6 +606,12 @@
     # 这里为了方便我只写了其中的一个节点的地址
     coredns_speaker_service_address="10.0.0.28" # 等lb部署完了改成lb的ip+端口,我们会在后面提到，后期怎么修改这个地址
     coredns_api_port=80 #coredns api提供服务的端口
+    
+    # coredns management api section starts
+    # 注意 etcd的三个节点，如果主机名发生变化请修改，在本文档中可以不用改
+    database_endpoints="https://etcd-node2:2379 | https://etcd-node1:2379 | https://etcd-node3:2379"
+    # ...其他不需要修改的设置
+    # coredns management api section ends
     
     # 不要改，逻辑是在本地先签名证书，所以你运行ansible的时候可以是在一个部署节点上
     # 也可以是在任何一台部署的目标机器上

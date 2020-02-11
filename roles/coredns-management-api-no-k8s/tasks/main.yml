@@ -7,12 +7,14 @@
 - name: Install docker
   yum:
     name: docker
+  when: offline != "yes"
 
 - name: Enable and start docker service
   service:
     name: docker
     enabled: yes
     state: started
+  when: offline != "yes"
 
 - name: Copy config template to target
   template: 

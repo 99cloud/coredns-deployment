@@ -1,9 +1,10 @@
-# /etc/systemd/system/corednsd.service
+# /etc/systemd/system/etcd.service
 [Unit]
 Description=etcd
 Documentation=https://github.com/etcd-io/etcd
 After=network-online.target
-Confilicts=etcd.service
+Type=notify
+#Confilicts=etcd.service
 
 [Service]
 Type=simple
